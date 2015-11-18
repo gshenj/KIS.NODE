@@ -6,12 +6,12 @@
   "author": "gshenj <gshenj@gmail.com>",
   "main": "index.js",
   "bugs": {
-    "url": "https://github.com/gshenj/kis.node/issues"
+    "url": "https://github.com/gshenj/KIS.NODE/issues"
   },
   "devDependencies": {
     "electron-prebuilt": "^0.34.0"
   },
-  "homepage": "https://github.com/gshenj/kis.node",
+  "homepage": "https://github.com/gshenj/KIS.NODE",
   "keywords": [
     "atom-shell",
     "electron",
@@ -22,7 +22,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/gshenj/kis.node.git"
+    "url": "https://github.com/gshenj/KIS.NODE.git"
   },
   "scripts": {
     "start": "electron .",

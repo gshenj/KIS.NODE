@@ -4,12 +4,17 @@
 
 <head>
     <meta charset="utf-8">
-    <title>打印</title>
+    <title>打印出货单</title>
 
     <script type="text/javascript">
         jQuery = require('jquery')
         $ = jQuery;
         console.log(jQuery.fn.jquery)
+
+        var ipc = require('ipc');
+        var order_info = ipc.sendSync('session', {opt: 'get', key: 'order_info'});
+        //alert(JSON.stringify(order_info))
+        console.log('get order_info return：' + JSON.stringify(order_info)); // prints "pong"
     </script>
     <link href="scripts/bootstrap/css/bootstrap.css" rel="stylesheet">
     <link href="data:text/css;charset=utf-8," data-href="scripts/bootstrap/css/bootstrap-theme.css" rel="stylesheet"

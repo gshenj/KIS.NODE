@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Bootstrap, from Twitter</title>
+    <title>新开出货单</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -230,14 +230,6 @@
 <div class="container">
     <div style="text-algin:center;">
         <table class="bill_table" style="width:100%; margin:20px auto 0px; text-algin:left;">
-            <!--<tr>
-            <td colspan="7">
-              <div id="customer_name_div">
-                <label for="search">客户名称：</label>
-                <input id="search" name="customer" />
-              </div>
-            </td>
-          </tr>-->
             <tr>
                 <td colspan="3" style="padding-right:70px;">
                     <label for="customer_name">客户名称：</label>
@@ -275,7 +267,7 @@
     <!--<tr>
         <td colspan="7" style="border:1px solid black;">-->
     <table class="bill_product_table" style="width:100%;">
-        <tr class="tbh">
+        <tr>
             <th width="20%">规格型号</th>
             <th width="18%">货物名称</th>
             <th width="10%">单位</th>
@@ -288,9 +280,7 @@
 
         <tr idx="1">
             <td>
-                <!--<input type="text" idx="0" value="" class="p" name="p_c" />-->
-                <select name="p_c" class="product_modal" onchange="change_modal(this)">
-                </select>
+                <select class="product_modal"></select>
             </td>
             <td>
                 <input type="text" class="product_category"/>
@@ -312,33 +302,8 @@
             </td>
         </tr>
 
-        <tr idx="2">
-            <td>
-                <!--<input type="text" idx="0" value="" class="p" name="p_c" />-->
-                <select name="p_c" class="product_modal" onchange="change_modal(this)">
-                </select>
-            </td>
-            <td>
-                <input type="text" class="product_category"/>
-            </td>
-            <td>
-                <input type="text" class="product_units"/>
-            </td>
-            <td>
-                <input type="text" class="product_num"/>
-            </td>
-            <td>
-                <input type="text" class="product_unit_price"/>
-            </td>
-            <td>
-                <input type="text" class="product_sum"/>
-            </td>
-            <td>
-                <input type="text" class="product_memo"/>
-            </td>
-        </tr>
 
-        <tr>
+        <tr id="total_sum_tr">
             <td colspan="7" style="text-align: right;font-weight: bold;">
                 合计金额：<span id="product_total_sum" style="margin-right: 20%;">10000</span>
             </td>
@@ -408,7 +373,7 @@
 <script>
     var customerData = new Array();
     var customerInfo = new Array();
-    var modals;
+    var modals = new Array();
     accounting.settings = {
         currency: {
             symbol : "¥",   // default currency symbol is '$'
@@ -423,10 +388,79 @@
             decimal : "."
         }
     }
-
     var p_win = null;
+
+    var c_customer_id = null;
+    var c_customer_name = null;
+    var c_customer_address = null;
+    var c_customer_phone = null;
+    var c_customer_principal = null;
+    var c_sale_date = null;
+    var c_product_modals = null;
+
     function print_order() {
         //window.print();
+        c_customer_id = $('#customer_name').val()
+        for (var i=0; i<customerData.length; i++) {
+            var _children = customerData[i].children;
+            for (var j=0; j<_children.length; j++) {
+                if (_children[j].id==c_customer_id) {
+                    c_customer_name = _children[j].text;
+                    break;
+                }
+            }
+        }
+        c_customer_address = $('#customer_address').val();
+        c_customer_principal = $('#customer_principal').val();
+        c_customer_phone = $('#customer_phone').val();
+        c_sale_date = $('#sale_date').val();
+
+        c_product_modals = new Array();
+        var _modals = $('.product_modal');
+        for (var i=0; i<_modals.length; i++) {
+            var modal_id = $(_modals[i]).val();
+            if (modal_id <= 0) {
+                continue;
+            }
+
+            var modal_name = getProductModalNameById(modal_id);
+            var idx = $(_modals[i]).parent().parent().attr("idx");
+            var product_category = $('tr[idx="'+idx+'"] .product_category').val();
+            var product_units = $('tr[idx="'+idx+'"] .product_units').val();
+            var product_unit_price = $('tr[idx="'+idx+'"] .product_unit_price').val();
+            var product_sum = $('tr[idx="'+idx+'"] .product_sum').val();
+            var product_memo = $('tr[idx="'+idx+'"] .product_memo').val();
+
+            c_product_modals.push({product_modal_id:modal_id, product_modal_name:modal_name, product_category:product_category, product_units:product_units,
+            product_units_price:product_unit_price, product_sum:product_sum, product_memo:product_memo})
+
+        }
+
+        function getProductModalNameById(id) {
+            for (var j=0; j<modals.length; j++) {
+                var options = modals[j].options;
+                for (var k=0; k<options.length; k++) {
+                    if (options[k].modal_id == id) {
+                        return options[k].modal_name;
+                    }
+                }
+            }
+            return null;
+        }
+
+
+        var order_info = {customer_id: c_customer_id,
+        customer_name: c_customer_name,
+        customer_address: c_customer_address,
+        customer_principal: c_customer_principal,
+        customer_phone: c_customer_phone,
+        sale_date: c_sale_date,
+        modals:c_product_modals};
+
+        console.log(JSON.stringify(order_info))
+
+        var r = ipc.sendSync('session', {opt: 'put', key: 'order_info', value:order_info});
+
         p_win = window.open('sale-order-preview.html', '打印', "width=900,height=600");
         window.onfocus = function () {
             if (p_win != null) {
@@ -549,10 +583,14 @@
                 j_product_sum.val('');
             } else {
                 j_product_unit_price.val(accounting.formatNumber(v_product_unit_price, 2));
-                j_product_sum.val(accounting.formatNumber(accounting.unformat(v_product_num) * accounting.unformat(v_product_unit_price)))
+                //alert(accounting.unformat(j_product_unit_price.val()))
+                var sum = accounting.unformat(j_product_num.val()) * accounting.unformat(j_product_unit_price.val())*100/100
+                j_product_sum.val(accounting.formatNumber(sum, 2))
             }
         }
 
+        //////循环5个项目，选了modal且sum补位空的相加
+        $('#product_total_sum')
 //        var _product_num = accounting.formatNumber(j_product_num.val())
 //        var _product_unit_price = accounting.formatNumber(j_product_unit_price.val(), 2);
 //        var _product_sum = accounting.formatNumber(accounting.unformat(_product_num) * accounting.unformat(_product_unit_price));
@@ -564,11 +602,16 @@
     }
 
     $(function () {
-
-        // $('#dialog').dialog({autoOpen: false, width:500,height:400});
-        //$('#zd').val(uname);
-        $('#customer_name').html();
+        //$('#customer_name').html();
         $('#customer_name').select2();
+
+        for (var i=2;i<=5;i++) {
+            var tr = $('tr[idx="1"]').clone();
+            $(tr).attr("idx", i);
+            $(tr).insertBefore($('#total_sum_tr'));
+
+        }
+
         $('.product_modal').html('<option class="opt" value="0">&nbsp;</option>');
         $('.product_modal').select2({width: '100%'});
         initSaleDate();
@@ -578,7 +621,6 @@
         $('.product_unit_price').on('change', function () {
             changeNumOrUnitPrice(this);
         })
-
 
         pgquery({
             sql: getCustomers, params: [], doResult: function (result) {
@@ -675,7 +717,6 @@
                                         }
                                         s += '</optgroup>';
                                     }
-
 
                                     $('.product_modal').select2('destroy');
                                     $('.product_modal').html(s);
