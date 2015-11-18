@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <title>Bootstrap, from Twitter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <script type="text/javascript">
+        jQuery = require('jquery')
+        $ = jQuery;
+        console.log(jQuery.fn.jquery)
+    </script>
+    <script src="scripts/pgquery.js"></script>
+
+
+    <script src="scripts/jquery-ui/jquery-ui.js"></script>
+    <script src="scripts/select2.full.min.js"></script>
+    <script type="text/javascript" src="scripts/accounting.min.js"></script>
+
+    <!--<script src="jq.js"></script>-->
+    <!--<script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>-->
+
+
+    <!-- Le styles -->
+    <!-- Bootstrap -->
+    <link href="scripts/jquery-ui/jquery-ui.css" rel="stylesheet">
+    <link href="styles/select2.min.css" rel="stylesheet">
+    <link href="scripts/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <!--<link href="scripts/bootstrap/css/doc.min.css" rel="stylesheet">-->
+    <style>
+        body {
+            padding-top: 60px;
+            /* 60px to make the container go all the way to the bottom of the topbar */
+        }
+    </style>
+    <link href="data:text/css;charset=utf-8," data-href="scripts/bootstrap/css/bootstrap-theme.css" rel="stylesheet"
+          id="bs-theme-stylesheet">
+    <!--<link href="../assets/css/bootstrap-responsive.css" rel="stylesheet">-->
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+    <script src="../assets/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">
+    <link rel="shortcut icon" href="../assets/ico/favicon.png">
+
+    <script>
+        var ipc = require('ipc');
+        var uname = ipc.sendSync('session', {opt: 'get', key: 'username'});
+        console.log('get session return：' + uname); // prints "pong"
+
+        var logout = function () {
+            if (window.confirm("确定退出？")) {
+                // doLogout()
+                var ret = ipc.sendSync('session', {opt: 'clear', key: ''});
+                if (ret == 'true') {
+                    console.log("Clear session!")
+                    uname = ipc.sendSync('session', {opt: 'get', key: 'username'});
+                    console.log('get session return：' + uname); // prints "pong"
+                }
+                document.location.href = "login.html"
+            }
+        }
+    </script>
+
+
+</head>
+
+<body>
+
+
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1"
+                    aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" style="color:black; font-size:18px;" href="#">苏州元斌塑胶科技有限公司KIS</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">新开出库单 <span class="sr-only">(current)</span></a></li>
+                <li><a href="#" data-toggle="modal" data-target="#myModal">出库单列表</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">系统管理<span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Action</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">Separated link</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">One more separated link</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <!--<form class="navbar-form navbar-left" role="search">
+            <div class="form-group">
+              <input type="text" class="form-control" placeholder="Search">
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+          </form>-->
+            <ul class="nav navbar-nav navbar-right">
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" id="kis-u" data-toggle="dropdown" role="button"
+                       aria-haspopup="true" aria-expanded="false">
+                        <script>
+                            document.write(uname)
+                        </script>
+                        <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Action</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="javascript:logout();">退出账户</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container-fluid -->
+</nav>
+
+
+<style type="text/css">
+    .container {
+        width: 100%;
+    }
+
+    .ui-autocomplete {
+        max-height: 350px;
+        /*高度值*/
+        overflow-y: auto;
+        /*超过高度出现滚动条*/
+        /*width:300px;*/
+        overflow-x: hidden;
+    }
+
+    .ui-autocomplete-category {
+        font-weight: bold;
+        padding: .2em .4em;
+        margin: .8em 0 .2em;
+        line-height: 1.5;
+    }
+
+    .bill_table td {
+        padding: 10px 0px;
+        vertical-align: middle;
+    }
+
+    .bill_product_table {
+        border-collapse: collapse;
+        border: 1px solid #aaa;
+    }
+
+    .bill_product_table th {
+        text-align: center;
+        border: 1px solid #aaa;
+        padding: 20px auto;
+        height: 40px;
+    }
+
+    .bill_product_table td {
+        text-align: left;
+        padding: 4px 0.5% 4px 0.5%;
+        height: 32px;
+        vertical-align: middle;
+        border: 1px solid #aaa;
+        /*background-color:#eee;*/
+    }
+
+    /*.odd {
+      background-color: #eee
+    }*/
+
+    input {
+        border: 1px solid steelblue;
+        height: 30px;
+        line-height: 30px;
+        padding-left: 8px;
+
+    }
+
+    .bill_product_table input {
+        width: 100%;
+        background-color: #fafafa;
+        height: 30px;
+        line-height: 30px;
+        border: 1px solid steelblue;
+    }
+
+    /*
+         .product_modal select>option {
+            display:block;
+           font-size: 14px;
+           padding-top: 6px;
+           padding-bottom:6px;
+        }*/
+
+    .select2-container--default .select2-selection--single {
+        background-color: #fff;
+        border: 1px solid steelblue;
+        border-radius: 0px;
+        height: 30px;
+
+    }
+</style>
+
+
+<div class="container">
+    <div style="text-algin:center;">
+        <table class="bill_table" style="width:100%; margin:20px auto 0px; text-algin:left;">
+            <!--<tr>
+            <td colspan="7">
+              <div id="customer_name_div">
+                <label for="search">客户名称：</label>
+                <input id="search" name="customer" />
+              </div>
+            </td>
+          </tr>-->
+            <tr>
+                <td colspan="3" style="padding-right:70px;">
+                    <label for="customer_name">客户名称：</label>
+                    <select id="customer_name" style="width:280px; ">
+                        <option></option>
+                    </select>
+                </td>
+                <td colspan="2">
+                    <!--<label for="customer_principal">联系人：</label>
+                    <input id="customer_principal" style="" />-->
+                    &nbsp;
+                </td>
+
+                <td id="sale_date_div" colspan="2" style="float:right;">
+                    <label for="sale_date">送货日期：</label>
+                    <input id="sale_date" type="text"/>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <label for="customer_address">送货地址：</label>
+                    <input style="width:350px;" id="customer_address"/>
+                </td>
+                <td colspan="2">
+                    <label for="customer_principal">联系人：</label>
+                    <input id="customer_principal"/>
+                </td>
+                <td colspan="2" style="float:right">
+                    <label for="customer_phone">客户电话：</label>
+                    <input id="customer_phone"/>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <!--<tr>
+        <td colspan="7" style="border:1px solid black;">-->
+    <table class="bill_product_table" style="width:100%;">
+        <tr class="tbh">
+            <th width="20%">规格型号</th>
+            <th width="18%">货物名称</th>
+            <th width="10%">单位</th>
+            <th width="10%">数量</th>
+            <th width="9%">价格</th>
+            <th width="13%">金额</th>
+            <th width="20%">备注</th>
+        </tr>
+
+
+        <tr idx="1">
+            <td>
+                <!--<input type="text" idx="0" value="" class="p" name="p_c" />-->
+                <select name="p_c" class="product_modal" onchange="change_modal(this)">
+                </select>
+            </td>
+            <td>
+                <input type="text" class="product_category"/>
+            </td>
+            <td>
+                <input type="text" class="product_units"/>
+            </td>
+            <td>
+                <input type="text" class="product_num"/>
+            </td>
+            <td>
+                <input type="text" class="product_unit_price"/>
+            </td>
+            <td>
+                <input type="text" class="product_sum"/>
+            </td>
+            <td>
+                <input type="text" class="product_memo"/>
+            </td>
+        </tr>
+
+        <tr idx="2">
+            <td>
+                <!--<input type="text" idx="0" value="" class="p" name="p_c" />-->
+                <select name="p_c" class="product_modal" onchange="change_modal(this)">
+                </select>
+            </td>
+            <td>
+                <input type="text" class="product_category"/>
+            </td>
+            <td>
+                <input type="text" class="product_units"/>
+            </td>
+            <td>
+                <input type="text" class="product_num"/>
+            </td>
+            <td>
+                <input type="text" class="product_unit_price"/>
+            </td>
+            <td>
+                <input type="text" class="product_sum"/>
+            </td>
+            <td>
+                <input type="text" class="product_memo"/>
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="7" style="text-align: right;font-weight: bold;">
+                合计金额：<span id="product_total_sum" style="margin-right: 20%;">10000</span>
+            </td>
+        </tr>
+    </table>
+    <!--<table class="print_sign_table" style="width:100%;margin:20px 0 10px;">
+            <tr>
+                <td style="width:33.3%; text-align: center;">财务：</td>
+                <td style="width:33.3%; text-align: center;">制单：<input type="text" id="zd" />
+              </script>
+                </td>
+                <td style="width:33.3%; text-align: center;">客户签收：</td>
+            </tr>
+        </table>-->
+    <!--<div style="text-align:center; wdith:100%; margin-top:40px; border:1px dashed #aaa;"><span>----白联:留存</span><span style="margin-left:30px;">----红联:客户</span><span style="margin-left:30px;">----黄联:结算</span></div>-->
+</div>
+<!-- /container -->
+
+<div style="text-align:center; margin-top:40px;">
+    <button class="btn btn-default btn-primary" type="submit" onclick="document.location.reload()"> 重 填</button>
+    <button class="btn btn-default btn-primary" style="margin-left:150px;" onclick="print_order()"> 打 印</button>
+</div>
+
+<!-- Button trigger modal -->
+<!--<button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">
+  Launch demo modal
+</button>-->
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+            </div>
+            <div class="modal-body">
+                ...
+                <br>
+                <br>
+                <br>
+                <br>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="dialog" style="display:none;">
+    <label for="city">城市</label>
+    <select name="city" id="city">
+    </select>
+
+    <label for="color">筛选</label>
+    <input name="color" id="color"/>
+</div>
+<!-- Le javascript
+  ================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<!--<script src="../assets/js/jquery.js"></script>-->
+<script src="scripts/bootstrap/js/bootstrap.js"></script>
+<script>
+    var customerData = new Array();
+    var customerInfo = new Array();
+    var modals;
+    accounting.settings = {
+        currency: {
+            symbol : "¥",   // default currency symbol is '$'
+            format: "%s%v", // controls output: %s = symbol, %v = value/number (can be object: see below)
+            decimal : ".",  // decimal point separator
+            thousand: ",",  // thousands separator
+            precision : 2   // decimal places
+        },
+        number: {
+            precision : 0,  // default precision on numbers is 0
+            thousand: ",",
+            decimal : "."
+        }
+    }
+
+    var p_win = null;
+    function print_order() {
+        //window.print();
+        p_win = window.open('sale-order-preview.html', '打印', "width=900,height=600");
+        window.onfocus = function () {
+            if (p_win != null) {
+                p_win.close();
+                p_win = null;
+            }
+        }
+    }
+
+    function initSaleDate() {
+        $("#sale_date").datepicker({
+            changeMonth: true,
+            changeYear: true,
+            dateFormat: 'yy-mm-dd',//日期格式
+            clearText: "清除",//清除日期的按钮名称
+            closeText: "关闭",//关闭选择框的按钮名称
+            prevText: '<上月',
+            nextText: '下月>',
+            currentText: '今天',
+            yearSuffix: '年', //年的后缀
+            showMonthAfterYear: true,//是否把月放在年的后面
+            monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+            monthNamesShort: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+            dayNames: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+            dayNamesShort: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
+            dayNamesMin: ['日', '一', '二', '三', '四', '五', '六'],
+            showButtonPanel: true,
+            gotoCurrent: true
+        });
+        $("#sale_date").datepicker("setDate", new Date());
+    }
+
+    function clear_modal_items() {
+        $('.product_category').val('');
+        $('.product_units').val('');
+        $('.product_unit_price').val('');
+        $('.product_num').val('');
+        $('.product_sum').val('');
+        $('.product_memo').val('');
+    }
+
+    function change_modal(src) {
+        var _modal_id = $(src).val();
+        var _idx = $(src).parent().parent().attr('idx');  // tr attr 'idx'
+        if (_modal_id == 0 || _modal_id == '') {
+            // 选择空项目
+
+            $('tr[idx="' + _idx + '"] .product_category').val('');
+            $('tr[idx="' + _idx + '"] .product_category').attr("category_id", '');
+
+            $('tr[idx="' + _idx + '"] .product_units').val('');
+            $('tr[idx="' + _idx + '"] .product_units').attr("units_id", '');
+            $('tr[idx="' + _idx + '"] .product_unit_price').val('');
+
+            $('tr[idx="' + _idx + '"] .product_num').val('');
+            $('tr[idx="' + _idx + '"] .product_sum').val('');
+            $('tr[idx="' + _idx + '"] .product_memo').val('');
+            return;
+
+            //  $('.product_category[idx="'+_idx+'"]').val('');
+            //  $('.product_category[idx="'+_idx+'"]').attr("category_id", '');
+
+            //  $('.product_units[idx="'+_idx+'"]').val('');
+            //  $('.product_units[idx="'+_idx+'"]').attr("units_id", '');
+            //  $('.product_unit_price[idx="'+_idx+'"]').val('');
+
+            //  $('.product_num[idx="'+_idx+'"]').val('');
+            //  $('.product_sum[idx="'+_idx+'"]').val('');
+            //  $('.product_memo[idx="'+_idx+'"]').val('');
+        }
+
+        var found = false;
+        for (var i = 0; i < modals.length; i++) {
+            var modalOptions = modals[i].options;
+            for (var j = 0; j < modalOptions.length; j++) {
+                if (modalOptions[j].modal_id == _modal_id) {
+                    $('tr[idx="' + _idx + '"] .product_category').val(modalOptions[j].category_name);
+                    $('tr[idx="' + _idx + '"] .product_category').attr("category_id", modalOptions[j].category_id);
+
+                    $('tr[idx="' + _idx + '"] .product_units').val(modalOptions[j].units_name);
+                    $('tr[idx="' + _idx + '"] .product_units').attr("units_id", modalOptions[j].units_id);
+                    $('tr[idx="' + _idx + '"] .product_unit_price').val(modalOptions[j].suggest_unit_price);
+
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found)
+                break;
+        }
+        // 重新计算金额
+        changeNumOrUnitPrice(src);
+    }
+
+    function changeNumOrUnitPrice(src){
+        var idx = $(src).parent().parent().attr('idx')
+        var j_product_num = $('tr[idx="'+idx+'"] .product_num');
+        var j_product_unit_price =  $('tr[idx="'+idx+'"] .product_unit_price');
+        var j_product_sum =  $('tr[idx="'+idx+'"] .product_sum');
+
+        var v_product_num = j_product_num.val();
+        var v_product_unit_price = j_product_unit_price.val();
+        var v_product_sum;
+
+        if ($.trim(v_product_num)=='') {
+            if ($.trim(v_product_unit_price)=='') {
+               j_product_unit_price.val('');
+            } else {
+                j_product_unit_price.val(accounting.formatNumber(v_product_unit_price, 2));
+            }
+
+            j_product_num.val('');
+            j_product_sum.val('');
+
+        } else {
+            j_product_num.val(accounting.formatNumber(j_product_num.val()))
+            if ($.trim(v_product_unit_price)=='') {
+                j_product_unit_price.val('');
+                j_product_sum.val('');
+            } else {
+                j_product_unit_price.val(accounting.formatNumber(v_product_unit_price, 2));
+                j_product_sum.val(accounting.formatNumber(accounting.unformat(v_product_num) * accounting.unformat(v_product_unit_price)))
+            }
+        }
+
+//        var _product_num = accounting.formatNumber(j_product_num.val())
+//        var _product_unit_price = accounting.formatNumber(j_product_unit_price.val(), 2);
+//        var _product_sum = accounting.formatNumber(accounting.unformat(_product_num) * accounting.unformat(_product_unit_price));
+//
+//        j_product_num.val(_product_num);
+//        j_product_unit_price.val(_product_unit_price)
+//        j_product_sum.val(_product_sum)
+
+    }
+
+    $(function () {
+
+        // $('#dialog').dialog({autoOpen: false, width:500,height:400});
+        //$('#zd').val(uname);
+        $('#customer_name').html();
+        $('#customer_name').select2();
+        $('.product_modal').html('<option class="opt" value="0">&nbsp;</option>');
+        $('.product_modal').select2({width: '100%'});
+        initSaleDate();
+        $('.product_num').on('change', function () {
+            changeNumOrUnitPrice(this);
+        })
+        $('.product_unit_price').on('change', function () {
+            changeNumOrUnitPrice(this);
+        })
+
+
+        pgquery({
+            sql: getCustomers, params: [], doResult: function (result) {
+                var rows = result.rows;
+                if (rows.length > 0) {
+                    for (var i = 0; i < rows.length; i++) {
+                        var found = false;
+                        var _customer_option = {id: rows[i].customer_id, text: rows[i].customer_name};
+                        var _customer_info = {
+                            address: rows[i].address,
+                            phone: rows[i].mobile_number,
+                            principal: rows[i].principal
+                        };
+                        for (var j = 0; j < customerData.length; j++) {
+                            if (rows[i].city_name == customerData[j].text) {
+                                customerData[j].children.push(_customer_option)
+                                customerInfo['"' + rows[i].customer_id + '"'] = _customer_info;
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            customerData.push({text: rows[i].city_name, children: [_customer_option]});
+                            customerInfo['"' + rows[i].customer_id + '"'] = _customer_info;
+                        }
+                    }
+                }
+
+                $('#customer_name').select2('destroy');
+                $('#customer_name').select2({
+                    data: customerData,
+                    //allowClear: true,
+                    placeholder: "请选择公司"
+                })
+
+                $('#customer_name').on('change',
+                        function () {
+                            var _id = $('#customer_name').val();
+                            $('#customer_address').val(customerInfo['"' + _id + '"'].address);
+                            $('#customer_phone').val(customerInfo['"' + _id + '"'].phone);
+                            $('#customer_principal').val(customerInfo['"' + _id + '"'].principal);
+
+                            // get product_modals
+                            var ccid = $('#customer_name').val()
+                            modals = new Array();
+                            pgquery({
+                                sql: getProductModals, params: [ccid], doResult: function (res) {
+
+                                    if (res.rows.length > 0) {
+                                        // alert(result.rows.length)
+                                        for (var i = 0; i < res.rows.length; i++) {
+                                            var category_id = res.rows[i].category_id;
+                                            var category_name = res.rows[i].category_name;
+                                            var modal_name = res.rows[i].modal_name;
+                                            var modal_id = res.rows[i].modal_id;
+                                            var units_id = res.rows[i].units_id;
+                                            var units_name = res.rows[i].units_name;
+                                            var suggest_unit_price = res.rows[i].suggest_unit_price;
+                                            var found = false;
+
+                                            var _option_modal = {
+                                                modal_name: modal_name,
+                                                modal_id: modal_id,
+                                                category_id: category_id,
+                                                category_name: category_name,
+                                                units_id: units_id,
+                                                units_name: units_name,
+                                                suggest_unit_price: suggest_unit_price
+                                            };
+
+                                            for (var j = 0; j < modals.length; j++) {
+                                                if (modals[j].category_id == category_id) {
+                                                    modals[j].options.push(_option_modal)
+                                                    found = true;
+                                                    break;
+                                                }
+                                            }
+
+                                            if (!found)
+                                                modals.push({
+                                                    category_id: category_id,
+                                                    category_name: category_name,
+                                                    options: [_option_modal]
+                                                })
+                                        }
+                                    }
+
+                                    var s = '<option class="opt" value="0">&nbsp;</option>';
+                                    for (var k = 0; k < modals.length; k++) {
+                                        s += '<optgroup label="' + modals[k].category_name + '">';
+                                        var options = modals[k].options;
+                                        for (var x = 0; x < options.length; x++) {
+                                            s += '<option class="opt" units="' + options[x].units + '" value="' + options[x].modal_id + '">' + options[x].modal_name + '</option>'
+                                        }
+                                        s += '</optgroup>';
+                                    }
+
+
+                                    $('.product_modal').select2('destroy');
+                                    $('.product_modal').html(s);
+                                    clear_modal_items();
+                                    $('.product_modal').select2({width: '100%'});
+                                    $('.product_modal').on('change', function () {
+                                        change_modal(this);
+                                    });
+                                }
+                            });
+                        });
+            }
+        });
+
+
+    });
+</script>
+</body>
+</html>

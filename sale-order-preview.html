@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <title>打印</title>
+
+    <script type="text/javascript">
+        jQuery = require('jquery')
+        $ = jQuery;
+        console.log(jQuery.fn.jquery)
+    </script>
+    <link href="scripts/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="data:text/css;charset=utf-8," data-href="scripts/bootstrap/css/bootstrap-theme.css" rel="stylesheet"
+          id="bs-theme-stylesheet">
+
+    <script src="scripts/bootstrap/js/bootstrap.js"></script>
+
+
+    <style type="text/css">
+
+
+        .container {
+            margin:16pt auto;
+            padding:10pt 8pt;
+            border:1px dashed #aaa;
+            font-size:11pt;
+        }
+
+        .container label {
+            font-weight:bold;
+        }
+        .company {
+            font-size:18pt;
+            color:#000;
+            font-weight:bold;
+        }
+        .bill_table {
+            width: 100%;
+            margin-top:10pt;
+            border:none;
+        }
+
+        .bill_table td {
+            text-align: left;
+            padding: 0pt 0pt;
+            border: none;
+            height:18pt;
+            vertical-align: middle;
+        }
+
+        .bill_product_table {
+            border-collapse: collapse;
+            border: none;
+
+        }
+
+        .bill_product_table th {
+            vertical-align: middle;
+            text-align: center;
+            font-weight: normal;
+            border: 1px solid #aaa;
+            height: 22pt;
+        }
+
+        .bill_product_table td {
+            text-align: left;
+            padding: 0pt 6pt;
+            height: 18pt;
+            vertical-align: middle;
+            border: 1px solid #aaa;
+            /*background-color:#eee;*/
+        }
+    </style>
+
+    <style media=print type="text/css">
+        .noprint {
+            visibility: hidden
+        }
+        .container {
+            border:none;
+            margin:0 auto;
+            padding:0 auto;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div style="text-align:center;">
+        <div class="company"><div>苏州元斌塑胶科技有限公司</div><div style="font-size:16pt; word-spacing: 2pt;">出 库 单</div></div>
+
+        <table style="width:100%; text-align:left; border-bottom:1px solid black;">
+        <tr>
+            <td colspan="3" style="width:40%">
+                地址：<span>苏州市相城区北桥街道石星路</span>&nbsp;
+            </td>
+        </tr>
+            <tr>
+                <td style="width:35%">电话：0512-65410295</td>
+                <td style="width:35%">传真：0512-65410295</td>
+                <td style=" width:30%">出货单编号： 1000001</td>
+            </tr>
+        </table>
+
+        <table class="bill_table">
+            <tr>
+                <td colspan="7">
+                    客户名称：
+                        <span id="customer_name">
+                              江苏坤华汽车配件有限公司
+                        </span>
+                </td>
+                <!--<td id="sale_date_div" colspan="4" style="text-align:right;">-->
+                    <!--<label for="sale_date">送货日期：</label>-->
+                    <!--<span id="sale_date">2015-11-27</span>-->
+                <!--</td>-->
+            </tr>
+            <tr>
+                <td colspan="7">
+                    送货地址：
+                    <span id="customer_address">江苏省丹阳市界牌镇小石路1111号</span>
+                </td>
+                <!--<td colspan="2">-->
+                    <!--<label for="customer_principal">联系人：</label>-->
+                    <!--<span id="customer_principal">陈玉坤</span>-->
+                <!--</td>-->
+                <!--<td colspan="2" style="text-align:right;">-->
+                        <!--<span style="float:right;">-->
+                        <!--<label for="customer_phone">客户电话：</label>-->
+                        <!--<span id="customer_phone">0512-9987334</span>-->
+                            <!--</span>-->
+                <!--</td>-->
+            </tr>
+            <tr>
+                <!--<td colspan="3">-->
+                    <!--<label for="customer_address">送货地址：</label>-->
+                    <!--<span id="customer_address">江苏省丹阳市界牌镇小石路1111号</span>-->
+                <!--</td>-->
+                <td colspan="2">
+                       客户电话：
+                        <span id="customer_phone">0512-9987334</span>
+                </td>
+                <td colspan="3">
+                   联系人：
+                    <span id="customer_principal">陈玉坤</span>
+                </td>
+
+                <td id="sale_date_div" colspan="2" style="text-align:right; padding-right:11%;">
+                    送货日期：
+                    <span id="sale_date">2015-11-27</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="bill_product_table" style="width:100%;">
+        <tr class="tbh">
+            <th width="17%">规格型号</th>
+            <th width="14%">货物名称</th>
+            <th width="8%">单位</th>
+            <th width="10%">数量</th>
+            <th width="10%">价格</th>
+            <th width="12%">金额</th>
+            <th width="18%">备注</th>
+            <th rowspan="6" width="11%" style="border:none; font-weight:normal; padding:0;">
+                <div style="margin:0pt 0pt;">说明：</br>白联:存根<br/>红联:客户</br>黄联:结算</div>
+            </th>
+        </tr>
+
+
+        <tr idx="1">
+            <td>
+                    <span name="p_c" class="product_modal" onchange="change_modal(this)">
+                           PP黑 1A
+                    </span>
+            </td>
+            <td>
+                <span type="text" class="product_category">聚丙烯</span>
+            </td>
+            <td>
+                <span type="text" class="product_units">千克</span>
+            </td>
+            <td>
+                <span type="text" class="product_num">1000</span>
+            </td>
+            <td>
+                <span type="text" class="product_unit_price">7.5</span>
+            </td>
+            <td>
+                <span type="text" class="product_sum">5768</span>
+            </td>
+            <td>
+                <span type="text" class="product_memo">这个是备注</span>
+            </td>
+            <!--<td colspan="5" style="vertical-align: middle;border:none;"><div style="margin:auto 0pt;">白联：存根<br/>红联：客户</br>黄联：结算</div></td>-->
+        </tr>
+
+        <tr idx="2">
+            <td>
+                    <span name="p_c" class="product_modal" onchange="change_modal(this)">
+                           PP黑 1A
+                    </span>
+            </td>
+            <td>
+                <span type="text" class="product_category">聚丙烯</span>
+            </td>
+            <td>
+                <span type="text" class="product_units">千克</span>
+            </td>
+            <td>
+                <span type="text" class="product_num">1000</span>
+            </td>
+            <td>
+                <span type="text" class="product_unit_price">7.5</span>
+            </td>
+            <td>
+                <span type="text" class="product_sum">5768</span>
+            </td>
+            <td>
+                <span type="text" class="product_memo">这个是备注</span>
+            </td>
+        </tr>
+        <tr idx="3">
+            <td>
+                    <span name="p_c" class="product_modal" onchange="change_modal(this)">
+
+                    </span>
+            </td>
+            <td>
+                <span type="text" class="product_category"></span>
+            </td>
+            <td>
+                <span type="text" class="product_units"></span>
+            </td>
+            <td>
+                <span type="text" class="product_num"></span>
+            </td>
+            <td>
+                <span type="text" class="product_unit_price"></span>
+            </td>
+            <td>
+                <span type="text" class="product_sum"></span>
+            </td>
+            <td>
+                <span type="text" class="product_memo"></span>
+            </td>
+        </tr>
+        <tr idx="4">
+            <td>
+                    <span name="p_c" class="product_modal" onchange="change_modal(this)">
+
+                    </span>
+            </td>
+            <td>
+                <span type="text" class="product_category"></span>
+            </td>
+            <td>
+                <span type="text" class="product_units"></span>
+            </td>
+            <td>
+                <span type="text" class="product_num"></span>
+            </td>
+            <td>
+                <span type="text" class="product_unit_price"></span>
+            </td>
+            <td>
+                <span type="text" class="product_sum"></span>
+            </td>
+            <td>
+                <span type="text" class="product_memo"></span>
+            </td>
+        </tr>
+        <tr idx="5">
+            <td>
+                    <span name="p_c" class="product_modal" onchange="change_modal(this)">
+
+                    </span>
+            </td>
+            <td>
+                <span type="text" class="product_category"></span>
+            </td>
+            <td>
+                <span type="text" class="product_units"></span>
+            </td>
+            <td>
+                <span type="text" class="product_num"></span>
+            </td>
+            <td>
+                <span type="text" class="product_unit_price"></span>
+            </td>
+            <td>
+                <span type="text" class="product_sum"></span>
+            </td>
+            <td>
+                <span type="text" class="product_memo"></span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="5" style="text-align: right; font-weight: bold; border-right:none;">
+                合计金额：
+            </td>
+            <td colspan="2" style="border-left:none; font-weight:bold;"><span id="product_total_sum">¥10000.00</span></td>
+        </tr>
+    </table>
+    <table class="print_sign_table" style="width:100%;margin:20px 0 10px;">
+        <tr>
+            <td style="width:33.3%; text-align: center;padding-right:11%;">财务：</td>
+            <td style="width:33.3%; text-align: center;padding-right:11%;">制单：<span></span>
+            </td>
+            <td style="width:33.3%; text-align: center; padding-right:11%;">客户签收：</td>
+        </tr>
+    </table>
+</div>
+
+<div class="noprint" style="text-align:center;">
+    <button onclick="window.print()" class="btn btn-default btn-primary noprint">打 印</button>
+</div>
+
+</body>
+</html>
