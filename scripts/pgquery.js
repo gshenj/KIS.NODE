@@ -27,7 +27,7 @@ var pgquery = function(query) {
 var getCustomers = "SELECT customer.id customer_id, customer.name as customer_name, tel_number, mobile_number, address,  principal, company, city.name as city_name, city.id " +
   "FROM customer,city "+
   "where customer.city = city.id "+
-  "order by city.id, customer.id asc";
+  "order by city.id, customer.id asc; ";
   
 var getProductModals = "SELECT product_modal.id as modal_id, product_modal.name as modal_name, product_modal.description, category category_id, product_category.name category_name, customer, product_units.id units_id, product_units.cn_name units_name, suggest_unit_price "+
   "FROM product_modal , product_category, product_units "+

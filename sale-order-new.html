@@ -305,7 +305,7 @@
 
         <tr id="total_sum_tr">
             <td colspan="7" style="text-align: right;font-weight: bold;">
-                合计金额：<span id="product_total_sum" style="margin-right: 20%;">10000</span>
+                合计金额：<span id="product_total_sum" style="margin-right: 20%;"></span>
             </td>
         </tr>
     </table>
@@ -339,18 +339,19 @@
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                         aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+                <h4 class="modal-title" id="myModalLabel">登出</h4>
             </div>
             <div class="modal-body">
-                ...
+
                 <br>
                 <br>
+                确定要登出？
                 <br>
                 <br>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="logout();">确定</button>
             </div>
         </div>
     </div>
@@ -518,6 +519,8 @@
             $('tr[idx="' + _idx + '"] .product_num').val('');
             $('tr[idx="' + _idx + '"] .product_sum').val('');
             $('tr[idx="' + _idx + '"] .product_memo').val('');
+            // 重新计算金额
+            changeNumOrUnitPrice(src);
             return;
 
             //  $('.product_category[idx="'+_idx+'"]').val('');
@@ -589,16 +592,28 @@
             }
         }
 
-        //////循环5个项目，选了modal且sum补位空的相加
-        $('#product_total_sum')
-//        var _product_num = accounting.formatNumber(j_product_num.val())
-//        var _product_unit_price = accounting.formatNumber(j_product_unit_price.val(), 2);
-//        var _product_sum = accounting.formatNumber(accounting.unformat(_product_num) * accounting.unformat(_product_unit_price));
-//
-//        j_product_num.val(_product_num);
-//        j_product_unit_price.val(_product_unit_price)
-//        j_product_sum.val(_product_sum)
+        $('#product_total_sum').html(getTotalSum());
+    }
 
+    function getTotalSum() {
+        var arr_modals = $('.product_modal');
+        var arr_sum = $('.product_sum');
+        var show_total_sum = true;
+        var total_sum = 0;
+        for (var i=0; i<arr_modals.length; i++) {
+
+            if ($(arr_modals[i]).val() > 0) {
+                // 没选
+                var _sum_val = $(arr_sum[i]).val();
+                if (_sum_val == '') {
+                    return '';
+                } else {
+                    total_sum += accounting.unformat(_sum_val);
+                }
+            }
+        }
+
+        return accounting.formatMoney(total_sum);
     }
 
     $(function () {
