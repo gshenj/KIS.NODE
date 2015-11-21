@@ -107,7 +107,8 @@
         if (result.rows.length>0 && result.rows[0].passwd==pwd) {
 
            var uname = result.rows[0].name;
-           console.log('put session return：'+ipc.sendSync('session', {opt:'put', key:'username', value:uname})); // prints "pong"
+            var uid = result.rows[0].id;
+           ipc.sendSync('session', {opt:'put', key:'user', value:{name:uname, id:uid}}); // prints "pong"
            if (document.querySelector('#remember-me').checked) {
               setUnameToCookie(uname);
               

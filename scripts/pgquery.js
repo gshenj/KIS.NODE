@@ -33,3 +33,6 @@ var getProductModals = "SELECT product_modal.id as modal_id, product_modal.name 
   "FROM product_modal , product_category, product_units "+
   "where product_modal.customer = $1 and product_modal.category = product_category.id and product_units.id=product_modal.units " +
   "order by product_modal.id"
+
+var setUpdateOrderNumber = "update sale_order_number set order_number=order_number+1";
+var getCurrentOrderNumber = "select order_number from sale_order_number";
