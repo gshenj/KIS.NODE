@@ -54,9 +54,17 @@
 
     <script>
         var ipc = require('ipc');
+      //  var ipc2 = require('ipc')
         var user = ipc.sendSync('session', {opt: 'get', key: 'user'});
         console.log('Login user: ' + user.name); // prints "pong"
 
+        ipc.on("hide_overlay", function(event, arg) {
+            $("#__m").modal('hide');
+        });
+
+        var hide_overlay = function() {
+            $("#__m").modal("hide")
+        }
 
         var logout = function () {
             // if (window.confirm("确定退出？")) {
@@ -97,7 +105,7 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
                 <li class="active"><a href="#">新开出库单 <span class="sr-only">(current)</span></a></li>
-                <li><a href="#" data-toggle="modal" data-target="#myModal">出库单列表</a></li>
+                <li><a href="javascript:findByOrderNumber(100052)">findbyordernumber</a></li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                        aria-expanded="false">系统管理<span class="caret"></span></a>
@@ -368,6 +376,26 @@
 <!--<script src="../assets/js/jquery.js"></script>-->
 <script src="scripts/bootstrap/js/bootstrap.js"></script>
 <script>
+
+    function findByOrderNumber(order_number) {
+        pgquery({
+            sql: findSaleOrder, params: [order_number], doResult: function (result) {
+                var json_data = result.rows[0].data;
+                console.log(json_data)
+                var r = ipc.sendSync('session', {opt: 'put', key: 'order', value: {order_info: json_data, type:"select"}});
+                $('#__m').modal('show')
+                //var r = ipc.sendSync('hide_main_window', {});
+                p_win = window.open('sale-order-preview.html', '打印', "width=900,height=600,alwaysOnTop=true");
+                window.onfocus = function () {
+                    if (!p_win.closed) {
+                        p_win.focus();
+                    }
+                }
+            }});
+    }
+
+
+
     var customerData = new Array();
     var customerInfo = new Array();
     var modals = new Array();
@@ -477,17 +505,25 @@
             product_total_sum: c_product_total_sum
         };
 
+        var order = {order_info: order_info, type:"create"}
 
         pgquery({
             sql: getCurrentOrderNumber, params: [], doResult: function (result) {
-                order_info.order_number = result.rows[0].order_number;
+                order.order_info.order_number = result.rows[0].order_number;
+                order.order_number = order.order_info.order_number;
                 console.log(JSON.stringify(order_info))
-                var r = ipc.sendSync('session', {opt: 'put', key: 'order_info', value: order_info});
-                p_win = window.open('sale-order-preview.html', '打印', "width=900,height=600");
+                var r = ipc.sendSync('session', {opt: 'put', key: 'order', value: order});
+
+                // way1
+               // r = ipc.sendSync('show_print_win', {url:'sale-order-preview.html'});
+
+
+                $('#__m').modal('show')
+                //var r = ipc.sendSync('hide_main_window', {});
+                p_win = window.open('sale-order-preview.html', '打印', "width=900,height=600,alwaysOnTop=true");
                 window.onfocus = function () {
-                    if (p_win != null) {
-                        p_win.close();
-                        p_win = null;
+                    if (!p_win.closed) {
+                        p_win.focus();
                     }
                 }
             }
@@ -773,5 +809,6 @@
 
     });
 </script>
+<div id="__m"></div>
 </body>
 </html>

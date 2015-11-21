@@ -47,8 +47,54 @@ app.on('ready', function() {
 });
 
 
+// 遮罩层通过ipc来控制
+
 // In main process.
 var ipc = require('ipc');
+var win = null;
+//这个方法创建窗口，没用
+ipc.on('show_print_win', function(event, arg) {
+    win = new BrowserWindow({width: 800,
+        height: 600
+        ,'auto-hide-menu-bar': true,
+        alwaysOnTop :true
+    });
+    win.setAlwaysOnTop(true);
+    win.loadUrl('file://' + __dirname + '/'+arg.url);
+    win.on('closed', function() {
+        win = null;
+    });
+
+    event.returnValue = true;
+});
+
+ipc.on('hide_print_win', function(event, arg) {
+   // mainWindow.webContents.executeJavaScript('hide_overlay()');
+    mainWindow.webContents.send('hide_overlay', '');
+
+    // ipc2.sendSync("hide_overlay", {})
+    //event.sender.send("hide_overlay", {})
+    event.returnValue = true;
+});
+
+
+ipc.on('chg_url', function(event, arg) {
+    mainWindow.loadUrl('file://' + __dirname + arg.url);
+    event.returnValue = true;
+});
+
+/*ipc.on('hide_main_window', function(event,arg) {
+    //mainWindow.hide();
+    mainWindow.setDocumentEdited(false);
+    event.returnValue = true;
+});
+
+ipc.on('show_main_window', function(event,arg) {
+    mainWindow.show();
+    event.returnValue = true;
+});*/
+
+
 ipc.on('session', function(event, arg) {  // arg->{opt:'', key:'', value:''}
      var opt = arg.opt;
      if (opt == 'get') {

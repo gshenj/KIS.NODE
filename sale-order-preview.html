@@ -10,13 +10,24 @@
         jQuery = require('jquery')
         $ = jQuery;
         var ipc = require('ipc');
-        var order = ipc.sendSync('session', {opt: 'get', key: 'order_info'});
+        var order = ipc.sendSync('session', {opt: 'get', key: 'order'});
         console.log(JSON.stringify(order)); // prints "pong"
+
+        var type = order.type;
+        var order_info = order.order_info;
     </script>
-    <!--<script src="scripts/pgquery.js"></script>-->
+    <script src="scripts/pgquery.js"></script>
 
     <script type="text/javascript" src="scripts/accounting.min.js"></script>
     <script>
+
+        var printed = false;
+        window.onbeforeunload = function() {
+            ipc.sendSync("hide_print_win", {});
+
+            if (printed)
+                var ret = ipc.sendSync('chg_url', {url:'/jquery-ui-example.html', printed:1});
+        }
 
         $(function () {
             accounting.settings = {
@@ -39,15 +50,15 @@
                 $(tr).insertBefore($('#total_sum_tr'));
             }
 
-            $('#order_number').html(order.order_number);
-            $('#customer_name').html(order.customer_name);
-            $('#customer_address').html(order.customer_address);
-            $('#customer_phone').html(order.customer_phone);
-            $('#customer_principal').html(order.customer_principal);
-            $("#sale_date").html(order.sale_date);
-            $('#create_user').html(order.create_user)
+            $('#order_number').html(order_info.order_number);
+            $('#customer_name').html(order_info.customer_name);
+            $('#customer_address').html(order_info.customer_address);
+            $('#customer_phone').html(order_info.customer_phone);
+            $('#customer_principal').html(order_info.customer_principal);
+            $("#sale_date").html(order_info.sale_date);
+            $('#create_user').html(order_info.create_user)
 
-            var modals = order.modals;
+            var modals = order_info.modals;
 
             for (var i = 0; i < modals.length; i++) {
 
@@ -69,14 +80,52 @@
                 $('tr[idx="' + (i + 1) + '"] .product_memo').html(modals[i].product_memo);
             }
 
-            var _total_sum = order.product_total_sum;
+            var _total_sum = order_info.product_total_sum;
             if (_total_sum != '') {
 
                 _total_sum = accounting.formatMoney(_total_sum);
             }
             $("#product_total_sum").html(_total_sum);
 
+
+            $(".btn-print").bind('click', function(){doPrint(this)})
         });
+
+
+        function doPrint(src) {
+
+
+            if (type == "create") {
+                // 保存并打印
+                $(src).attr("disabled","disabled");
+               // $(src).html('正在保存...')
+                pgquery({
+                    sql: addSaleOrder,
+                    params: [order.order_number, order_info, order_info],
+                    doResult: function (result) {
+                        console.log(JSON.stringify(result))
+                        //$(src).html('保存成功，开始打印...');
+
+                        window.print();
+                        printed = true;
+
+                        // $(src).html('已打印，关闭')
+                        // $(src).removeAttr("disabled");
+                        // $('.btn-print').unbind('click')
+                        // $('.btn-print').bind('click', function(){
+                        //   var ret = ipc.sendSync('chg_url', {url:'/jquery-ui-example.html', printed:1});
+                        //    window.close();  // will call onunload
+                        //})
+
+                    }
+                });
+
+            } else if (type == "select") {
+                // 已经存在的选择打印
+                window.print();
+            }
+
+        }
 
     </script>
     <link href="scripts/bootstrap/css/bootstrap.css" rel="stylesheet">
@@ -84,8 +133,6 @@
           id="bs-theme-stylesheet">
 
     <script src="scripts/bootstrap/js/bootstrap.js"></script>
-
-
 
     <style type="text/css">
 
@@ -264,7 +311,11 @@
 </div>
 
 <div class="noprint" style="text-align:center;">
-    <button onclick="window.print()" class="btn btn-default btn-primary noprint">打 印</button>
+
+    <button class="btn btn-default btn-primary" type="submit" onclick="window.close()">关 闭</button>
+
+    <button  class="btn btn-default btn-primary noprint btn-print" style="margin-left:150px;">保存&打印</button>
+
 </div>
 
 </body>

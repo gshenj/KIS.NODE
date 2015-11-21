@@ -35,4 +35,9 @@ var getProductModals = "SELECT product_modal.id as modal_id, product_modal.name 
   "order by product_modal.id"
 
 var setUpdateOrderNumber = "update sale_order_number set order_number=order_number+1";
-var getCurrentOrderNumber = "select order_number from sale_order_number";
+//var getCurrentOrderNumber = "select order_number from sale_order_number";
+var getCurrentOrderNumber = "select nextval('seq_order_number') as order_number";
+
+var addSaleOrder = "insert into sale_order_json(order_number, data, data1) values($1, $2, $3)"
+
+var findSaleOrder = "select data,order_number from sale_order_json where order_number = $1"
