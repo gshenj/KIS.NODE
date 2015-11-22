@@ -1,0 +1,1306 @@
+--
+-- PostgreSQL database dump
+--
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+
+--
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+SET search_path = public, pg_catalog;
+
+--
+-- Name: get_sale_order_number(boolean); Type: FUNCTION; Schema: public; Owner: kisweb
+--
+
+CREATE FUNCTION get_sale_order_number(currval boolean DEFAULT false, OUT the_order_number integer) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$--declare
+--the_order_number integer;
+
+begin
+  if currval then
+    UPDATE sale_order_number SET order_number = order_number+1 WHERE id=1;
+  end if;
+  select order_number into the_order_number from sale_order_number where id = 1;
+  --return the_order_number;
+
+end;$$;
+
+
+ALTER FUNCTION public.get_sale_order_number(currval boolean, OUT the_order_number integer) OWNER TO kisweb;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: city; Type: TABLE; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE TABLE city (
+    id integer NOT NULL,
+    name character varying,
+    province integer
+);
+
+
+ALTER TABLE city OWNER TO kisweb;
+
+--
+-- Name: TABLE city; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON TABLE city IS '城市';
+
+
+--
+-- Name: company; Type: TABLE; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE TABLE company (
+    id integer NOT NULL,
+    name character varying,
+    memo character varying,
+    address character varying,
+    tel_number character varying,
+    mobile_number character varying,
+    fax character varying
+);
+
+
+ALTER TABLE company OWNER TO kisweb;
+
+--
+-- Name: TABLE company; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON TABLE company IS '公司信息
+如：苏州琴惠塑业有限公司';
+
+
+--
+-- Name: customer; Type: TABLE; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE TABLE customer (
+    id integer NOT NULL,
+    name character varying NOT NULL,
+    tel_number character varying,
+    mobile_number character varying,
+    address character varying,
+    sale_bill_info character varying,
+    city integer,
+    principal character varying,
+    company integer
+);
+
+
+ALTER TABLE customer OWNER TO kisweb;
+
+--
+-- Name: COLUMN customer.tel_number; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN customer.tel_number IS 'seperate with '';'' if has more then one tel number.';
+
+
+--
+-- Name: COLUMN customer.mobile_number; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN customer.mobile_number IS 'seperate with '';'' if has more then one mobile number.';
+
+
+--
+-- Name: COLUMN customer.sale_bill_info; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN customer.sale_bill_info IS '开票信息';
+
+
+--
+-- Name: COLUMN customer.principal; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN customer.principal IS '负责人';
+
+
+--
+-- Name: COLUMN customer.company; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN customer.company IS '对应公司是哪个';
+
+
+--
+-- Name: kis_role; Type: TABLE; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE TABLE kis_role (
+    id integer NOT NULL,
+    name character varying,
+    description character varying
+);
+
+
+ALTER TABLE kis_role OWNER TO kisweb;
+
+--
+-- Name: kis_user; Type: TABLE; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE TABLE kis_user (
+    id integer NOT NULL,
+    name character varying NOT NULL,
+    passwd character varying NOT NULL,
+    update_time timestamp without time zone,
+    role integer,
+    show_name character varying
+);
+
+
+ALTER TABLE kis_user OWNER TO kisweb;
+
+--
+-- Name: product_category; Type: TABLE; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE TABLE product_category (
+    id integer NOT NULL,
+    name character varying NOT NULL,
+    description character varying
+);
+
+
+ALTER TABLE product_category OWNER TO kisweb;
+
+--
+-- Name: TABLE product_category; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON TABLE product_category IS '产品类别：聚丙烯，ABS等';
+
+
+--
+-- Name: product_modal; Type: TABLE; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE TABLE product_modal (
+    id integer NOT NULL,
+    name character varying NOT NULL,
+    description character varying,
+    category integer DEFAULT 1 NOT NULL,
+    customer integer NOT NULL,
+    units integer,
+    suggest_unit_price numeric(10,2)
+);
+
+
+ALTER TABLE product_modal OWNER TO kisweb;
+
+--
+-- Name: TABLE product_modal; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON TABLE product_modal IS '产品型号';
+
+
+--
+-- Name: COLUMN product_modal.category; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN product_modal.category IS '产品分类';
+
+
+--
+-- Name: COLUMN product_modal.customer; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN product_modal.customer IS 'product belong to which customer!';
+
+
+--
+-- Name: COLUMN product_modal.units; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN product_modal.units IS '计量单位';
+
+
+--
+-- Name: product_units; Type: TABLE; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE TABLE product_units (
+    id integer NOT NULL,
+    cn_name character varying NOT NULL,
+    en_name character varying NOT NULL,
+    description character varying
+);
+
+
+ALTER TABLE product_units OWNER TO kisweb;
+
+--
+-- Name: purchase_material; Type: TABLE; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE TABLE purchase_material (
+    id integer NOT NULL,
+    name character varying,
+    description character varying
+);
+
+
+ALTER TABLE purchase_material OWNER TO kisweb;
+
+--
+-- Name: purchase_source; Type: TABLE; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE TABLE purchase_source (
+    id integer NOT NULL,
+    name character varying,
+    phone_number character varying,
+    principal character varying,
+    address character varying
+);
+
+
+ALTER TABLE purchase_source OWNER TO kisweb;
+
+--
+-- Name: purchase_units; Type: TABLE; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE TABLE purchase_units (
+    id integer NOT NULL,
+    name character varying,
+    description character varying
+);
+
+
+ALTER TABLE purchase_units OWNER TO kisweb;
+
+--
+-- Name: sale_order; Type: TABLE; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE TABLE sale_order (
+    id integer NOT NULL,
+    date_text character varying,
+    total_sum numeric,
+    create_user integer,
+    create_datetime timestamp without time zone,
+    comment character varying,
+    order_number character varying,
+    customer integer,
+    content_thumbnail character varying,
+    customer_name character varying,
+    customer_address character varying,
+    customer_principal character varying,
+    customer_contact_number character varying,
+    create_user_name character varying,
+    flag integer DEFAULT 0,
+    company_name character varying,
+    company_address character varying,
+    company_contact_number character varying,
+    company_fax character varying
+);
+
+
+ALTER TABLE sale_order OWNER TO kisweb;
+
+--
+-- Name: COLUMN sale_order.date_text; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order.date_text IS '开单日期';
+
+
+--
+-- Name: COLUMN sale_order.total_sum; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order.total_sum IS '订单总金额';
+
+
+--
+-- Name: COLUMN sale_order.create_user; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order.create_user IS '订单制单人';
+
+
+--
+-- Name: COLUMN sale_order.create_datetime; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order.create_datetime IS '创建时间';
+
+
+--
+-- Name: COLUMN sale_order.comment; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order.comment IS '订单备注';
+
+
+--
+-- Name: COLUMN sale_order.order_number; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order.order_number IS '订单号码';
+
+
+--
+-- Name: COLUMN sale_order.customer; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order.customer IS '客户id';
+
+
+--
+-- Name: COLUMN sale_order.customer_name; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order.customer_name IS '冗余属性';
+
+
+--
+-- Name: COLUMN sale_order.customer_address; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order.customer_address IS '冗余属性';
+
+
+--
+-- Name: COLUMN sale_order.customer_principal; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order.customer_principal IS '冗余属性';
+
+
+--
+-- Name: COLUMN sale_order.customer_contact_number; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order.customer_contact_number IS '冗余属性';
+
+
+--
+-- Name: COLUMN sale_order.create_user_name; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order.create_user_name IS '冗余属性';
+
+
+--
+-- Name: COLUMN sale_order.flag; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order.flag IS '1: 已作废
+0: 未作废，默认值';
+
+
+--
+-- Name: sale_order_item; Type: TABLE; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE TABLE sale_order_item (
+    id integer NOT NULL,
+    product_modal integer,
+    quantity numeric NOT NULL,
+    unit_price numeric,
+    sum numeric,
+    memo character varying,
+    serial_number integer,
+    sale_order integer,
+    product_modal_text character varying,
+    product_category_text character varying,
+    product_units_text character varying
+);
+
+
+ALTER TABLE sale_order_item OWNER TO kisweb;
+
+--
+-- Name: COLUMN sale_order_item.quantity; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order_item.quantity IS 'xiao shou mou chan pin de shu liang!';
+
+
+--
+-- Name: COLUMN sale_order_item.sum; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order_item.sum IS 'xiao shou jin e';
+
+
+--
+-- Name: COLUMN sale_order_item.serial_number; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order_item.serial_number IS '订单项序号';
+
+
+--
+-- Name: COLUMN sale_order_item.sale_order; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order_item.sale_order IS '订单项对应哪个订单';
+
+
+--
+-- Name: COLUMN sale_order_item.product_modal_text; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order_item.product_modal_text IS '型号打印的文字，冗余';
+
+
+--
+-- Name: COLUMN sale_order_item.product_category_text; Type: COMMENT; Schema: public; Owner: kisweb
+--
+
+COMMENT ON COLUMN sale_order_item.product_category_text IS '产品分类文字，冗余';
+
+
+--
+-- Name: sale_order_json; Type: TABLE; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE TABLE sale_order_json (
+    order_number integer NOT NULL,
+    data jsonb,
+    data1 json
+);
+
+
+ALTER TABLE sale_order_json OWNER TO kisweb;
+
+--
+-- Name: sale_order_number; Type: TABLE; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE TABLE sale_order_number (
+    order_number integer,
+    id integer
+);
+
+
+ALTER TABLE sale_order_number OWNER TO kisweb;
+
+--
+-- Name: seq_kis; Type: SEQUENCE; Schema: public; Owner: kisweb
+--
+
+CREATE SEQUENCE seq_kis
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE seq_kis OWNER TO kisweb;
+
+--
+-- Name: seq_order_number; Type: SEQUENCE; Schema: public; Owner: kisweb
+--
+
+CREATE SEQUENCE seq_order_number
+    START WITH 100001
+    INCREMENT BY 1
+    MINVALUE 100001
+    MAXVALUE 999999
+    CACHE 1
+    CYCLE;
+
+
+ALTER TABLE seq_order_number OWNER TO kisweb;
+
+--
+-- Data for Name: city; Type: TABLE DATA; Schema: public; Owner: kisweb
+--
+
+COPY city (id, name, province) FROM stdin;
+3	常州市	\N
+4	丹阳市	\N
+1	上海市	\N
+2	苏州市	\N
+5	无锡市	\N
+6	南京市	\N
+\.
+
+
+--
+-- Data for Name: company; Type: TABLE DATA; Schema: public; Owner: kisweb
+--
+
+COPY company (id, name, memo, address, tel_number, mobile_number, fax) FROM stdin;
+1	苏州琴惠塑业有限公司	\N	苏州市相城区北桥石星路	0512-65410295	13706133501	0512-65410295
+2	苏州元斌塑胶科技有限公司	\N	苏州市相城区北桥石星路	0512-65410295	18662181879	0512-65410295
+\.
+
+
+--
+-- Data for Name: customer; Type: TABLE DATA; Schema: public; Owner: kisweb
+--
+
+COPY customer (id, name, tel_number, mobile_number, address, sale_bill_info, city, principal, company) FROM stdin;
+274	丹阳汉江	123	123	123	123	4	陈建平	1
+276	江苏海狮					4		1
+277	丹阳市界牌渡口汽车配件有限公司					4		1
+278	常州市鑫跃灯业有限公司					4		1
+2	上海立鼎塑料有限公司	021-78954625	1895623145	上海市奉贤区南桥镇益民村660号	名称：苏州琴惠塑业有限公司\r\n税号：320500749422651\r\n开户银行：建行苏州市北桥分理处(563)\r\n开户账号：32201997441050907860\r\n地址：苏州市相城区北桥镇石星路\r\n电话：0512-65410295\r\n传真：0512-65410295	1	卞钧	1
+3	上海泰晟塑胶有限公司	021-564887978	139128456789	沈杜路100号	名称：苏州琴惠塑业有限公司\r\n税号：320500749422651\r\n开户银行：建行苏州市北桥分理处(563)\r\n开户账号：32201997441050907860\r\n地址：苏州市相城区北桥镇石星路\r\n电话：0512-65410295\r\n传真：0512-65410295	1	卞总	1
+1	江苏坤华汽车配件有限公司	0511-9873833	18973647383	丹阳市灯橙大道	名称：苏州琴惠塑业有限公司\r\n税号：320500749422651\r\n开户银行：建行苏州市北桥分理处(563)\r\n开户账号：32201997441050907860\r\n地址：苏州市相城区北桥镇石星路\r\n电话：0512-65410295\r\n传真：0512-65410295	4	陈玉坤	1
+281	南京长明					6		1
+284	东亚灯具厂					3	乔总	1
+295	常州大兴汽车配件有限公司			常州市小河		3	朱学财	1
+283	苏州平盛塑胶有限公司			苏州市相城区北桥镇石星路		2	邹平	1
+282	上海冠晟塑胶有限公司			上海市		1	卞钧	1
+273	苏州迅盛塑胶电器有限公司	13913310215	123	123	123	2	徐松柏	1
+280	常州市联顺汽车配件有限公司			小河镇		3	谭尚文	1
+275	常州长明			庙边村	名称：苏州琴惠塑业有限公司\r\n税号：320500749422651\r\n开户银行：建行苏州市北桥分理处(563)\r\n开户账号：32201997441050907860\r\n地址：苏州市相城区北桥镇石星路\r\n电话：0512-65410295\r\n传真：0512-65410295	3	陈步郎	1
+\.
+
+
+--
+-- Data for Name: kis_role; Type: TABLE DATA; Schema: public; Owner: kisweb
+--
+
+COPY kis_role (id, name, description) FROM stdin;
+1	超级管理员	超级管理员
+9	操作员	出库操作员
+2	经理	经理
+\.
+
+
+--
+-- Data for Name: kis_user; Type: TABLE DATA; Schema: public; Owner: kisweb
+--
+
+COPY kis_user (id, name, passwd, update_time, role, show_name) FROM stdin;
+1	老总	1234	2015-06-29 00:00:00	2	\N
+2	沈锦	1234	2015-06-29 00:00:00	2	\N
+\.
+
+
+--
+-- Data for Name: product_category; Type: TABLE DATA; Schema: public; Owner: kisweb
+--
+
+COPY product_category (id, name, description) FROM stdin;
+1	聚丙烯	pp
+3	聚氯乙烯	PVC
+6	ABS	ABS
+7	HIPS	HIPS
+9	PA6	PA6
+2	聚乙烯	PE
+\.
+
+
+--
+-- Data for Name: product_modal; Type: TABLE DATA; Schema: public; Owner: kisweb
+--
+
+COPY product_modal (id, name, description, category, customer, units, suggest_unit_price) FROM stdin;
+1	PP黑 A级	PP料普通--1A级	1	1	1	7.25
+2	PP黑 2A级	pp黑料普通 AA	1	1	1	6.30
+286	pp黑 特级		1	284	1	8.00
+287	PVC		3	278	1	14.00
+288	pp白		1	278	1	9.00
+289	pp黑		1	278	1	8.00
+292	GFPP		1	274	1	13.00
+301	HDPE		2	273	1	\N
+285	pp普黑	111	1	284	1	6.40
+\.
+
+
+--
+-- Data for Name: product_units; Type: TABLE DATA; Schema: public; Owner: kisweb
+--
+
+COPY product_units (id, cn_name, en_name, description) FROM stdin;
+3	包	PCS	\N
+2	吨	T	\N
+1	千克	KG	\N
+\.
+
+
+--
+-- Data for Name: purchase_material; Type: TABLE DATA; Schema: public; Owner: kisweb
+--
+
+COPY purchase_material (id, name, description) FROM stdin;
+\.
+
+
+--
+-- Data for Name: purchase_source; Type: TABLE DATA; Schema: public; Owner: kisweb
+--
+
+COPY purchase_source (id, name, phone_number, principal, address) FROM stdin;
+\.
+
+
+--
+-- Data for Name: purchase_units; Type: TABLE DATA; Schema: public; Owner: kisweb
+--
+
+COPY purchase_units (id, name, description) FROM stdin;
+\.
+
+
+--
+-- Data for Name: sale_order; Type: TABLE DATA; Schema: public; Owner: kisweb
+--
+
+COPY sale_order (id, date_text, total_sum, create_user, create_datetime, comment, order_number, customer, content_thumbnail, customer_name, customer_address, customer_principal, customer_contact_number, create_user_name, flag, company_name, company_address, company_contact_number, company_fax) FROM stdin;
+331	2015-03-05	8200.00	1	2015-03-05 14:01:39.644	\N	1000146	273	【HDPE,聚乙烯,1000千克*8.20元/千克=8200.00元】	苏州迅盛塑胶电器有限公司	123	徐松柏	13913310215	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+334	2015-03-05	19800.00	1	2015-03-05 14:02:10.733	\N	1000147	1	【PP黑 A级,聚丙烯,1000千克*7.20元/千克=7200.00元】\n【PP黑 2A级,聚丙烯,2000千克*6.30元/千克=12600.00元】	江苏坤华汽车配件有限公司	丹阳市灯橙大道	陈玉坤	0511-9873833	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+336	2015-03-05	21600.00	1	2015-03-05 14:02:34.457	\N	1000148	1	【PP黑 A级,聚丙烯,3000千克*7.20元/千克=21600.00元】	江苏坤华汽车配件有限公司	丹阳市灯橙大道	陈玉坤	0511-9873833	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+339	2015-03-05	39000.00	1	2015-03-05 20:20:50.751	\N	1000149	274	【GFPP,聚丙烯,1000千克*13.00元/千克=13000.00元】\n【GFPP,聚丙烯,2000千克*13.00元/千克=26000.00元】	丹阳汉江	123	陈建平	123	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+341	2015-03-05	39000.00	1	2015-03-05 20:21:20.91	\N	1000150	274	【GFPP,聚丙烯,3000千克*13.00元/千克=39000.00元】	丹阳汉江	123	陈建平	123	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+345	2015-03-05	84000.00	1	2015-03-05 20:22:23.398	\N	1000151	278	【PVC,聚氯乙烯,3000千克*14.00元/千克=42000.00元】\n【pp白,聚丙烯,2000千克*9.00元/千克=18000.00元】\n【pp黑,聚丙烯,3000千克*8.00元/千克=24000.00元】	常州市鑫跃灯业有限公司				老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+347	2015-03-05	14000.00	1	2015-03-05 20:22:51.915	\N	1000152	278	【PVC,聚氯乙烯,1000千克*14.00元/千克=14000.00元】	常州市鑫跃灯业有限公司				老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+349	2015-03-05	80000.00	1	2015-03-05 20:23:16.172	\N	1000153	278	【pp黑,聚丙烯,10000千克*8.00元/千克=80000.00元】	常州市鑫跃灯业有限公司				老总	1	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+351	2015-03-05	28000.00	1	2015-03-05 20:28:19.733	\N	1000154	278	【PVC,聚氯乙烯,2000千克*14.00元/千克=28000.00元】	常州市鑫跃灯业有限公司				老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+353	2015-03-05	14000.00	1	2015-03-05 20:34:24.182	\N	1000155	278	【PVC,聚氯乙烯,1000千克*14.00元/千克=14000.00元】	常州市鑫跃灯业有限公司				老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+355	2015-03-05	35000.00	1	2015-03-05 20:35:07.042	\N	1000156	278	【PVC,聚氯乙烯,2500千克*14.00元/千克=35000.00元】	常州市鑫跃灯业有限公司				老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+357	2015-03-05	137750.00	1	2015-03-05 20:36:04.515	\N	1000157	1	【PP黑 A级,聚丙烯,19000千克*7.25元/千克=137750.00元】	江苏坤华汽车配件有限公司	丹阳市灯橙大道	陈玉坤	0511-9873833	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+359	2015-03-05	17991.00	1	2015-03-05 20:37:10.968	\N	1000158	273	【HDPE,聚乙烯,1999千克*9.00元/千克=17991.00元】	苏州迅盛塑胶电器有限公司	123	徐松柏	13913310215	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+361	2015-03-05	81000.00	1	2015-03-05 20:51:11.504	\N	1000159	273	【HDPE,聚乙烯,9000千克*9.00元/千克=81000.00元】	苏州迅盛塑胶电器有限公司	123	徐松柏	13913310215	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+363	2015-08-02	\N	1	2015-08-02 22:36:08.028	\N	1000160	273	【HDPE,聚乙烯,10000千克】	苏州迅盛塑胶电器有限公司	123	徐松柏	13913310215	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+365	2015-08-02	\N	1	2015-08-02 22:59:47.372	\N	1000161	273	【HDPE,聚乙烯,2000千克】	苏州迅盛塑胶电器有限公司	123	徐松柏	13913310215	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+367	2015-08-03	70000.00	1	2015-08-03 12:15:46.517	\N	1000162	278	【PVC,聚氯乙烯,5000千克*14.00元/千克=70000.00元】	常州市鑫跃灯业有限公司				老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+369	2015-08-03	8054.75	1	2015-08-03 12:48:03.544	\N	1000163	1	【PP黑 A级,聚丙烯,1111千克*7.25元/千克=8054.75元】	江苏坤华汽车配件有限公司	丹阳市灯橙大道	陈玉坤	0511-9873833	老总	1	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+371	2015-08-03	\N	1	2015-08-03 12:50:59.891	\N	1000164	273	【HDPE,聚乙烯,3333千克】	苏州迅盛塑胶电器有限公司	123	徐松柏	13913310215	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+373	2015-08-03	72000.00	1	2015-08-03 12:56:00.458	\N	1000165	273	【HDPE,聚乙烯,9000千克*8.00元/千克=72000.00元】	苏州迅盛塑胶电器有限公司	123	徐松柏	13913310215	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+377	2015-08-03	122000.00	1	2015-08-03 13:09:52.377	\N	1000166	278	【PVC,聚氯乙烯,4000千克*14.00元/千克=56000.00元】\n【pp白,聚丙烯,2000千克*9.00元/千克=18000.00元】\n【pp黑,聚丙烯,6000千克*8.00元/千克=48000.00元】	常州市鑫跃灯业有限公司				老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+379	2015-08-04	82000.00	1	2015-08-04 19:27:09.914	\N	1000167	273	【HDPE,聚乙烯,10000千克*8.20元/千克=82000.00元】	苏州迅盛塑胶电器有限公司	123	徐松柏	13913310215	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+381	2015-08-13	\N	1	2015-08-13 21:56:40.097	\N	1000168	273	【HDPE,聚乙烯,1222千克】	苏州迅盛塑胶电器有限公司	123	徐松柏	13913310215	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+383	2015-09-20	80000.00	1	2015-09-20 12:33:40.672	\N	1000169	273	【HDPE,聚乙烯,10000千克*8.00元/千克=80000.00元】	苏州迅盛塑胶电器有限公司	123	徐松柏	13913310215	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+386	2015-09-20	56000.00	1	2015-09-20 12:38:33.375	\N	1000170	284	【pp黑 特级,聚丙烯,3000千克*8.00元/千克=24000.00元】\n【pp普黑,聚丙烯,5000千克*6.40元/千克=32000.00元】	东亚灯具厂		乔总		老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+388	2015-09-20	1111.00	1	2015-09-20 12:42:58.638	\N	1000171	273	【HDPE,聚乙烯,1111千克*1.00元/千克=1111.00元】	苏州迅盛塑胶电器有限公司	123	徐松柏	13913310215	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+390	2015-10-15	76000.00	1	2015-10-15 14:04:21.914	\N	1000172	273	【HDPE,聚乙烯,10000千克*7.60元/千克=76000.00元】	苏州迅盛塑胶电器有限公司	123	徐松柏	13913310215	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+393	2015-10-28	115200.00	1	2015-10-28 20:05:28.08	\N	1000173	1	【PP黑 A级,聚丙烯,9000千克*7.20元/千克=64800.00元】\n【PP黑 2A级,聚丙烯,8000千克*6.30元/千克=50400.00元】	江苏坤华汽车配件有限公司	丹阳市灯橙大道	陈玉坤	0511-9873833	老总	0	苏州琴惠塑业有限公司	苏州市相城区北桥石星路	0512-65410295	0512-65410295
+\.
+
+
+--
+-- Data for Name: sale_order_item; Type: TABLE DATA; Schema: public; Owner: kisweb
+--
+
+COPY sale_order_item (id, product_modal, quantity, unit_price, sum, memo, serial_number, sale_order, product_modal_text, product_category_text, product_units_text) FROM stdin;
+330	301	1000	8.20	8200.00		1	331	HDPE	聚乙烯	千克
+332	2	2000	6.30	12600.00		2	334	PP黑 2A级	聚丙烯	千克
+333	1	1000	7.20	7200.00		1	334	PP黑 A级	聚丙烯	千克
+335	1	3000	7.20	21600.00		1	336	PP黑 A级	聚丙烯	千克
+337	292	2000	13.00	26000.00		2	339	GFPP	聚丙烯	千克
+338	292	1000	13.00	13000.00		1	339	GFPP	聚丙烯	千克
+340	292	3000	13.00	39000.00		1	341	GFPP	聚丙烯	千克
+342	287	3000	14.00	42000.00		1	345	PVC	聚氯乙烯	千克
+343	288	2000	9.00	18000.00		2	345	pp白	聚丙烯	千克
+344	289	3000	8.00	24000.00		3	345	pp黑	聚丙烯	千克
+346	287	1000	14.00	14000.00		1	347	PVC	聚氯乙烯	千克
+348	289	10000	8.00	80000.00		1	349	pp黑	聚丙烯	千克
+350	287	2000	14.00	28000.00		1	351	PVC	聚氯乙烯	千克
+352	287	1000	14.00	14000.00		1	353	PVC	聚氯乙烯	千克
+354	287	2500	14.00	35000.00		1	355	PVC	聚氯乙烯	千克
+356	1	19000	7.25	137750.00		1	357	PP黑 A级	聚丙烯	千克
+358	301	1999	9.00	17991.00		1	359	HDPE	聚乙烯	千克
+360	301	9000	9.00	81000.00		1	361	HDPE	聚乙烯	千克
+362	301	10000	\N	\N		1	363	HDPE	聚乙烯	千克
+364	301	2000	\N	\N		1	365	HDPE	聚乙烯	千克
+366	287	5000	14.00	70000.00		1	367	PVC	聚氯乙烯	千克
+368	1	1111	7.25	8054.75	顶顶顶	1	369	PP黑 A级	聚丙烯	千克
+370	301	3333	\N	\N		1	371	HDPE	聚乙烯	千克
+372	301	9000	8.00	72000.00		1	373	HDPE	聚乙烯	千克
+374	289	6000	8.00	48000.00		3	377	pp黑	聚丙烯	千克
+375	287	4000	14.00	56000.00		1	377	PVC	聚氯乙烯	千克
+376	288	2000	9.00	18000.00		2	377	pp白	聚丙烯	千克
+378	301	10000	8.20	82000.00		1	379	HDPE	聚乙烯	千克
+380	301	1222	\N	\N		1	381	HDPE	聚乙烯	千克
+382	301	10000	8.00	80000.00		1	383	HDPE	聚乙烯	千克
+384	286	3000	8.00	24000.00		1	386	pp黑 特级	聚丙烯	千克
+385	285	5000	6.40	32000.00		2	386	pp普黑	聚丙烯	千克
+387	301	1111	1.00	1111.00		1	388	HDPE	聚乙烯	千克
+389	301	10000	7.60	76000.00		1	390	HDPE	聚乙烯	千克
+391	1	9000	7.20	64800.00		1	393	PP黑 A级	聚丙烯	千克
+392	2	8000	6.30	50400.00		2	393	PP黑 2A级	聚丙烯	千克
+\.
+
+
+--
+-- Data for Name: sale_order_json; Type: TABLE DATA; Schema: public; Owner: kisweb
+--
+
+COPY sale_order_json (order_number, data, data1) FROM stdin;
+100009	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100009", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100009","product_total_sum":"","sale_date":"2015-11-21"}
+100011	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100011", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100011","product_total_sum":"","sale_date":"2015-11-21"}
+100012	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100012", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100012","product_total_sum":"","sale_date":"2015-11-21"}
+100013	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100013", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100013","product_total_sum":"","sale_date":"2015-11-21"}
+100014	{"modals": [{"product_num": "9,000", "product_sum": "63,000.00", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "7.00", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100014", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": 63000, "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"9,000","product_sum":"63,000.00","product_unit_price":"7.00","product_units":"千克"}],"order_number":"100014","product_total_sum":63000,"sale_date":"2015-11-21"}
+100015	{"modals": [{"product_num": "9,000", "product_sum": "63,000.00", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "7.00", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100015", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": 63000, "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"9,000","product_sum":"63,000.00","product_unit_price":"7.00","product_units":"千克"}],"order_number":"100015","product_total_sum":63000,"sale_date":"2015-11-21"}
+100016	{"modals": [{"product_num": "9,000", "product_sum": "63,000.00", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "7.00", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100016", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": 63000, "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"9,000","product_sum":"63,000.00","product_unit_price":"7.00","product_units":"千克"}],"order_number":"100016","product_total_sum":63000,"sale_date":"2015-11-21"}
+100017	{"modals": [{"product_num": "9,000", "product_sum": "63,000.00", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "7.00", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100017", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": 63000, "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"9,000","product_sum":"63,000.00","product_unit_price":"7.00","product_units":"千克"}],"order_number":"100017","product_total_sum":63000,"sale_date":"2015-11-21"}
+100018	{"modals": [{"product_num": "9,000", "product_sum": "63,000.00", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "7.00", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100018", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": 63000, "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"9,000","product_sum":"63,000.00","product_unit_price":"7.00","product_units":"千克"}],"order_number":"100018","product_total_sum":63000,"sale_date":"2015-11-21"}
+100021	{"modals": [{"product_num": "9,000", "product_sum": "63,000.00", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "7.00", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100021", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": 63000, "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"9,000","product_sum":"63,000.00","product_unit_price":"7.00","product_units":"千克"}],"order_number":"100021","product_total_sum":63000,"sale_date":"2015-11-21"}
+100022	{"modals": [{"product_num": "9,000", "product_sum": "63,000.00", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "7.00", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100022", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": 63000, "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"9,000","product_sum":"63,000.00","product_unit_price":"7.00","product_units":"千克"}],"order_number":"100022","product_total_sum":63000,"sale_date":"2015-11-21"}
+100023	{"modals": [{"product_num": "9,000", "product_sum": "63,000.00", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "7.00", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100023", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": 63000, "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"9,000","product_sum":"63,000.00","product_unit_price":"7.00","product_units":"千克"}],"order_number":"100023","product_total_sum":63000,"sale_date":"2015-11-21"}
+100024	{"modals": [{"product_num": "9,000", "product_sum": "63,000.00", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "7.00", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100024", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": 63000, "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"9,000","product_sum":"63,000.00","product_unit_price":"7.00","product_units":"千克"}],"order_number":"100024","product_total_sum":63000,"sale_date":"2015-11-21"}
+100025	{"modals": [{"product_num": "9,000", "product_sum": "63,000.00", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "7.00", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100025", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": 63000, "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"9,000","product_sum":"63,000.00","product_unit_price":"7.00","product_units":"千克"}],"order_number":"100025","product_total_sum":63000,"sale_date":"2015-11-21"}
+100026	{"modals": [{"product_num": "9,000", "product_sum": "63,000.00", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "7.00", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100026", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": 63000, "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"9,000","product_sum":"63,000.00","product_unit_price":"7.00","product_units":"千克"}],"order_number":"100026","product_total_sum":63000,"sale_date":"2015-11-21"}
+100027	{"modals": [{"product_num": "9,000", "product_sum": "63,000.00", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "7.00", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100027", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": 63000, "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"9,000","product_sum":"63,000.00","product_unit_price":"7.00","product_units":"千克"}],"order_number":"100027","product_total_sum":63000,"sale_date":"2015-11-21"}
+100028	{"modals": [{"product_num": "9,000", "product_sum": "63,000.00", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "7.00", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100028", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": 63000, "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"9,000","product_sum":"63,000.00","product_unit_price":"7.00","product_units":"千克"}],"order_number":"100028","product_total_sum":63000,"sale_date":"2015-11-21"}
+100029	{"modals": [{"product_num": "9,000", "product_sum": "63,000.00", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "7.00", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100029", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": 63000, "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"9,000","product_sum":"63,000.00","product_unit_price":"7.00","product_units":"千克"}],"order_number":"100029","product_total_sum":63000,"sale_date":"2015-11-21"}
+100030	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100030", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100030","product_total_sum":"","sale_date":"2015-11-21"}
+100031	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100031", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100031","product_total_sum":"","sale_date":"2015-11-21"}
+100032	{"modals": [{"product_num": "9,000", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100032", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"9,000","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100032","product_total_sum":"","sale_date":"2015-11-21"}
+100033	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100033", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100033","product_total_sum":"","sale_date":"2015-11-21"}
+100034	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100034", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100034","product_total_sum":"","sale_date":"2015-11-21"}
+100035	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100035", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100035","product_total_sum":"","sale_date":"2015-11-21"}
+100036	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100036", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100036","product_total_sum":"","sale_date":"2015-11-21"}
+100037	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100037", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100037","product_total_sum":"","sale_date":"2015-11-21"}
+100040	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100040", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100040","product_total_sum":"","sale_date":"2015-11-21"}
+100041	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100041", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100041","product_total_sum":"","sale_date":"2015-11-21"}
+100042	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100042", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100042","product_total_sum":"","sale_date":"2015-11-21"}
+100049	{"modals": [{"product_num": "10,000", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100049", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"10,000","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100049","product_total_sum":"","sale_date":"2015-11-21"}
+100050	{"modals": [{"product_num": "10,000", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100050", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"10,000","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100050","product_total_sum":"","sale_date":"2015-11-21"}
+100052	{"modals": [{"product_num": "10,000", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100052", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"10,000","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100052","product_total_sum":"","sale_date":"2015-11-21"}
+100053	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100053", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100053","product_total_sum":"","sale_date":"2015-11-21"}
+100070	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100070", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100070","product_total_sum":"","sale_date":"2015-11-21"}
+100075	{"modals": [{"product_num": "10,000", "product_sum": "80,000.00", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "8.00", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100075", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": 80000, "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"10,000","product_sum":"80,000.00","product_unit_price":"8.00","product_units":"千克"}],"order_number":"100075","product_total_sum":80000,"sale_date":"2015-11-21"}
+100077	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100077", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100077","product_total_sum":"","sale_date":"2015-11-21"}
+100092	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100092", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100092","product_total_sum":"","sale_date":"2015-11-21"}
+100116	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100116", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100116","product_total_sum":"","sale_date":"2015-11-21"}
+100117	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100117", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100117","product_total_sum":"","sale_date":"2015-11-21"}
+100121	{"modals": [{"product_num": "", "product_sum": "", "product_memo": "", "product_units": "千克", "product_modal_id": "301", "product_modal_name": "HDPE", "product_unit_price": "", "product_category_id": "2", "product_category_name": "聚乙烯"}], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100121", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[{"product_category_id":"2","product_category_name":"聚乙烯","product_memo":"","product_modal_id":"301","product_modal_name":"HDPE","product_num":"","product_sum":"","product_unit_price":"","product_units":"千克"}],"order_number":"100121","product_total_sum":"","sale_date":"2015-11-21"}
+100124	{"modals": [], "sale_date": "2015-11-21", "create_user": "沈锦", "customer_id": "273", "order_number": "100124", "customer_name": "苏州迅盛塑胶电器有限公司", "create_user_id": 2, "customer_phone": "123", "customer_address": "123", "product_total_sum": "", "customer_principal": "徐松柏"}	{"create_user":"沈锦","create_user_id":2,"customer_address":"123","customer_id":"273","customer_name":"苏州迅盛塑胶电器有限公司","customer_phone":"123","customer_principal":"徐松柏","modals":[],"order_number":"100124","product_total_sum":"","sale_date":"2015-11-21"}
+\.
+
+
+--
+-- Data for Name: sale_order_number; Type: TABLE DATA; Schema: public; Owner: kisweb
+--
+
+COPY sale_order_number (order_number, id) FROM stdin;
+1000173	1
+\.
+
+
+--
+-- Name: seq_kis; Type: SEQUENCE SET; Schema: public; Owner: kisweb
+--
+
+SELECT pg_catalog.setval('seq_kis', 393, true);
+
+
+--
+-- Name: seq_order_number; Type: SEQUENCE SET; Schema: public; Owner: kisweb
+--
+
+SELECT pg_catalog.setval('seq_order_number', 100124, true);
+
+
+--
+-- Name: pk_city; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY city
+    ADD CONSTRAINT pk_city PRIMARY KEY (id);
+
+
+--
+-- Name: pk_company; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY company
+    ADD CONSTRAINT pk_company PRIMARY KEY (id);
+
+
+--
+-- Name: pk_customer; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY customer
+    ADD CONSTRAINT pk_customer PRIMARY KEY (id);
+
+
+--
+-- Name: pk_kis_role; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY kis_role
+    ADD CONSTRAINT pk_kis_role PRIMARY KEY (id);
+
+
+--
+-- Name: pk_kis_user; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY kis_user
+    ADD CONSTRAINT pk_kis_user PRIMARY KEY (id);
+
+
+--
+-- Name: pk_product; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY product_modal
+    ADD CONSTRAINT pk_product PRIMARY KEY (id);
+
+
+--
+-- Name: pk_product_category; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY product_category
+    ADD CONSTRAINT pk_product_category PRIMARY KEY (id);
+
+
+--
+-- Name: pk_product_units; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY product_units
+    ADD CONSTRAINT pk_product_units PRIMARY KEY (id);
+
+
+--
+-- Name: pk_purchase_material; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY purchase_material
+    ADD CONSTRAINT pk_purchase_material PRIMARY KEY (id);
+
+
+--
+-- Name: pk_sale_order; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY sale_order
+    ADD CONSTRAINT pk_sale_order PRIMARY KEY (id);
+
+
+--
+-- Name: pk_sale_order_item; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY sale_order_item
+    ADD CONSTRAINT pk_sale_order_item PRIMARY KEY (id);
+
+
+--
+-- Name: pk_sale_order_json; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY sale_order_json
+    ADD CONSTRAINT pk_sale_order_json PRIMARY KEY (order_number);
+
+
+--
+-- Name: pk_source_of_purchase; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY purchase_source
+    ADD CONSTRAINT pk_source_of_purchase PRIMARY KEY (id);
+
+
+--
+-- Name: uk_city_name; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY city
+    ADD CONSTRAINT uk_city_name UNIQUE (name);
+
+
+--
+-- Name: uk_customer_name; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY customer
+    ADD CONSTRAINT uk_customer_name UNIQUE (name);
+
+
+--
+-- Name: uk_kis_role_name; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY kis_role
+    ADD CONSTRAINT uk_kis_role_name UNIQUE (name);
+
+
+--
+-- Name: uk_kis_user_name; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY kis_user
+    ADD CONSTRAINT uk_kis_user_name UNIQUE (name);
+
+
+--
+-- Name: uk_order_number; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY sale_order
+    ADD CONSTRAINT uk_order_number UNIQUE (order_number);
+
+
+--
+-- Name: uk_product_name; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY product_modal
+    ADD CONSTRAINT uk_product_name UNIQUE (name);
+
+
+--
+-- Name: uk_purchase_material_name; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY purchase_material
+    ADD CONSTRAINT uk_purchase_material_name UNIQUE (name);
+
+
+--
+-- Name: uk_purchase_units; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY purchase_units
+    ADD CONSTRAINT uk_purchase_units PRIMARY KEY (id);
+
+
+--
+-- Name: uk_purchase_units_name; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY purchase_units
+    ADD CONSTRAINT uk_purchase_units_name UNIQUE (name);
+
+
+--
+-- Name: uk_source_of_purchase_name; Type: CONSTRAINT; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+ALTER TABLE ONLY purchase_source
+    ADD CONSTRAINT uk_source_of_purchase_name UNIQUE (name);
+
+
+--
+-- Name: fki_customer_city; Type: INDEX; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE INDEX fki_customer_city ON customer USING btree (city);
+
+
+--
+-- Name: fki_customer_company; Type: INDEX; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE INDEX fki_customer_company ON customer USING btree (company);
+
+
+--
+-- Name: fki_product_category; Type: INDEX; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE INDEX fki_product_category ON product_modal USING btree (category);
+
+
+--
+-- Name: fki_product_modal_assigned_item; Type: INDEX; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE INDEX fki_product_modal_assigned_item ON sale_order_item USING btree (product_modal);
+
+
+--
+-- Name: fki_product_modal_customer; Type: INDEX; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE INDEX fki_product_modal_customer ON product_modal USING btree (customer);
+
+
+--
+-- Name: fki_product_modal_units; Type: INDEX; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE INDEX fki_product_modal_units ON product_modal USING btree (units);
+
+
+--
+-- Name: fki_sale_order_assigned_item; Type: INDEX; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE INDEX fki_sale_order_assigned_item ON sale_order_item USING btree (sale_order);
+
+
+--
+-- Name: fki_sale_order_create_user; Type: INDEX; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE INDEX fki_sale_order_create_user ON sale_order USING btree (create_user);
+
+
+--
+-- Name: fki_sale_order_customer; Type: INDEX; Schema: public; Owner: kisweb; Tablespace: 
+--
+
+CREATE INDEX fki_sale_order_customer ON sale_order USING btree (customer);
+
+
+--
+-- Name: fk_customer_city; Type: FK CONSTRAINT; Schema: public; Owner: kisweb
+--
+
+ALTER TABLE ONLY customer
+    ADD CONSTRAINT fk_customer_city FOREIGN KEY (city) REFERENCES city(id);
+
+
+--
+-- Name: fk_customer_company; Type: FK CONSTRAINT; Schema: public; Owner: kisweb
+--
+
+ALTER TABLE ONLY customer
+    ADD CONSTRAINT fk_customer_company FOREIGN KEY (company) REFERENCES company(id);
+
+
+--
+-- Name: fk_kis_user_role; Type: FK CONSTRAINT; Schema: public; Owner: kisweb
+--
+
+ALTER TABLE ONLY kis_user
+    ADD CONSTRAINT fk_kis_user_role FOREIGN KEY (role) REFERENCES kis_role(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: fk_product_modal_category; Type: FK CONSTRAINT; Schema: public; Owner: kisweb
+--
+
+ALTER TABLE ONLY product_modal
+    ADD CONSTRAINT fk_product_modal_category FOREIGN KEY (category) REFERENCES product_category(id);
+
+
+--
+-- Name: fk_product_modal_customer; Type: FK CONSTRAINT; Schema: public; Owner: kisweb
+--
+
+ALTER TABLE ONLY product_modal
+    ADD CONSTRAINT fk_product_modal_customer FOREIGN KEY (customer) REFERENCES customer(id);
+
+
+--
+-- Name: fk_product_modal_item; Type: FK CONSTRAINT; Schema: public; Owner: kisweb
+--
+
+ALTER TABLE ONLY sale_order_item
+    ADD CONSTRAINT fk_product_modal_item FOREIGN KEY (product_modal) REFERENCES product_modal(id);
+
+
+--
+-- Name: fk_product_modal_units; Type: FK CONSTRAINT; Schema: public; Owner: kisweb
+--
+
+ALTER TABLE ONLY product_modal
+    ADD CONSTRAINT fk_product_modal_units FOREIGN KEY (units) REFERENCES product_units(id);
+
+
+--
+-- Name: fk_sale_order_create_user; Type: FK CONSTRAINT; Schema: public; Owner: kisweb
+--
+
+ALTER TABLE ONLY sale_order
+    ADD CONSTRAINT fk_sale_order_create_user FOREIGN KEY (create_user) REFERENCES kis_user(id);
+
+
+--
+-- Name: fk_sale_order_customer; Type: FK CONSTRAINT; Schema: public; Owner: kisweb
+--
+
+ALTER TABLE ONLY sale_order
+    ADD CONSTRAINT fk_sale_order_customer FOREIGN KEY (customer) REFERENCES customer(id);
+
+
+--
+-- Name: fk_sale_order_item; Type: FK CONSTRAINT; Schema: public; Owner: kisweb
+--
+
+ALTER TABLE ONLY sale_order_item
+    ADD CONSTRAINT fk_sale_order_item FOREIGN KEY (sale_order) REFERENCES sale_order(id);
+
+
+--
+-- Name: public; Type: ACL; Schema: -; Owner: postgres
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM postgres;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+--
+-- Name: get_sale_order_number(boolean); Type: ACL; Schema: public; Owner: kisweb
+--
+
+REVOKE ALL ON FUNCTION get_sale_order_number(currval boolean, OUT the_order_number integer) FROM PUBLIC;
+REVOKE ALL ON FUNCTION get_sale_order_number(currval boolean, OUT the_order_number integer) FROM kisweb;
+GRANT ALL ON FUNCTION get_sale_order_number(currval boolean, OUT the_order_number integer) TO kisweb;
+GRANT ALL ON FUNCTION get_sale_order_number(currval boolean, OUT the_order_number integer) TO PUBLIC;
+
+
+--
+-- Name: city; Type: ACL; Schema: public; Owner: kisweb
+--
+
+REVOKE ALL ON TABLE city FROM PUBLIC;
+REVOKE ALL ON TABLE city FROM kisweb;
+GRANT ALL ON TABLE city TO kisweb;
+GRANT ALL ON TABLE city TO PUBLIC;
+
+
+--
+-- Name: company; Type: ACL; Schema: public; Owner: kisweb
+--
+
+REVOKE ALL ON TABLE company FROM PUBLIC;
+REVOKE ALL ON TABLE company FROM kisweb;
+GRANT ALL ON TABLE company TO kisweb;
+GRANT ALL ON TABLE company TO PUBLIC;
+
+
+--
+-- Name: customer; Type: ACL; Schema: public; Owner: kisweb
+--
+
+REVOKE ALL ON TABLE customer FROM PUBLIC;
+REVOKE ALL ON TABLE customer FROM kisweb;
+GRANT ALL ON TABLE customer TO kisweb;
+GRANT ALL ON TABLE customer TO PUBLIC;
+
+
+--
+-- Name: kis_role; Type: ACL; Schema: public; Owner: kisweb
+--
+
+REVOKE ALL ON TABLE kis_role FROM PUBLIC;
+REVOKE ALL ON TABLE kis_role FROM kisweb;
+GRANT ALL ON TABLE kis_role TO kisweb;
+GRANT ALL ON TABLE kis_role TO PUBLIC;
+
+
+--
+-- Name: kis_user; Type: ACL; Schema: public; Owner: kisweb
+--
+
+REVOKE ALL ON TABLE kis_user FROM PUBLIC;
+REVOKE ALL ON TABLE kis_user FROM kisweb;
+GRANT ALL ON TABLE kis_user TO kisweb;
+GRANT ALL ON TABLE kis_user TO PUBLIC;
+
+
+--
+-- Name: product_category; Type: ACL; Schema: public; Owner: kisweb
+--
+
+REVOKE ALL ON TABLE product_category FROM PUBLIC;
+REVOKE ALL ON TABLE product_category FROM kisweb;
+GRANT ALL ON TABLE product_category TO kisweb;
+GRANT ALL ON TABLE product_category TO PUBLIC;
+
+
+--
+-- Name: product_modal; Type: ACL; Schema: public; Owner: kisweb
+--
+
+REVOKE ALL ON TABLE product_modal FROM PUBLIC;
+REVOKE ALL ON TABLE product_modal FROM kisweb;
+GRANT ALL ON TABLE product_modal TO kisweb;
+GRANT ALL ON TABLE product_modal TO PUBLIC;
+
+
+--
+-- Name: product_units; Type: ACL; Schema: public; Owner: kisweb
+--
+
+REVOKE ALL ON TABLE product_units FROM PUBLIC;
+REVOKE ALL ON TABLE product_units FROM kisweb;
+GRANT ALL ON TABLE product_units TO kisweb;
+GRANT ALL ON TABLE product_units TO PUBLIC;
+
+
+--
+-- Name: sale_order; Type: ACL; Schema: public; Owner: kisweb
+--
+
+REVOKE ALL ON TABLE sale_order FROM PUBLIC;
+REVOKE ALL ON TABLE sale_order FROM kisweb;
+GRANT ALL ON TABLE sale_order TO kisweb;
+GRANT ALL ON TABLE sale_order TO PUBLIC;
+
+
+--
+-- Name: sale_order_item; Type: ACL; Schema: public; Owner: kisweb
+--
+
+REVOKE ALL ON TABLE sale_order_item FROM PUBLIC;
+REVOKE ALL ON TABLE sale_order_item FROM kisweb;
+GRANT ALL ON TABLE sale_order_item TO kisweb;
+GRANT ALL ON TABLE sale_order_item TO PUBLIC;
+
+
+--
+-- Name: sale_order_number; Type: ACL; Schema: public; Owner: kisweb
+--
+
+REVOKE ALL ON TABLE sale_order_number FROM PUBLIC;
+REVOKE ALL ON TABLE sale_order_number FROM kisweb;
+GRANT ALL ON TABLE sale_order_number TO kisweb;
+GRANT ALL ON TABLE sale_order_number TO PUBLIC;
+
+
+--
+-- Name: seq_kis; Type: ACL; Schema: public; Owner: kisweb
+--
+
+REVOKE ALL ON SEQUENCE seq_kis FROM PUBLIC;
+REVOKE ALL ON SEQUENCE seq_kis FROM kisweb;
+GRANT ALL ON SEQUENCE seq_kis TO kisweb;
+GRANT ALL ON SEQUENCE seq_kis TO postgres;
+GRANT ALL ON SEQUENCE seq_kis TO PUBLIC;
+
+
+--
+-- Name: seq_order_number; Type: ACL; Schema: public; Owner: kisweb
+--
+
+REVOKE ALL ON SEQUENCE seq_order_number FROM PUBLIC;
+REVOKE ALL ON SEQUENCE seq_order_number FROM kisweb;
+GRANT ALL ON SEQUENCE seq_order_number TO kisweb;
+GRANT ALL ON SEQUENCE seq_order_number TO PUBLIC;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
