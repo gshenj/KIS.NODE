@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="utf-8">
+    <title>出货单列表</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <script type="text/javascript">
+        jQuery = require('jquery')
+        $ = jQuery;
+        console.log(jQuery.fn.jquery)
+    </script>
+    <script src="scripts/pgquery.js"></script>
+
+
+    <script src="scripts/jquery-ui/jquery-ui.js"></script>
+    <script src="scripts/select2.full.min.js"></script>
+    <script type="text/javascript" src="scripts/accounting.min.js"></script>
+
+    <!--<script src="jq.js"></script>-->
+    <!--<script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>-->
+
+
+    <!-- Le styles -->
+    <!-- Bootstrap -->
+    <link href="scripts/jquery-ui/jquery-ui.css" rel="stylesheet">
+    <link href="styles/select2.min.css" rel="stylesheet">
+    <link href="scripts/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <!--<link href="scripts/bootstrap/css/doc.min.css" rel="stylesheet">-->
+    <style>
+        body {
+            padding-top: 60px;
+            /* 60px to make the container go all the way to the bottom of the topbar */
+        }
+    </style>
+    <link href="data:text/css;charset=utf-8," data-href="scripts/bootstrap/css/bootstrap-theme.css" rel="stylesheet"
+          id="bs-theme-stylesheet">
+    <!--<link href="../assets/css/bootstrap-responsive.css" rel="stylesheet">-->
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+    <script src="../assets/js/html5shiv.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">
+    <link rel="shortcut icon" href="../assets/ico/favicon.png">
+
+</head>
+
+<body>
+
+
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1"
+                    aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" style="color:black; font-size:18px;" href="#">苏州元斌塑胶科技有限公司KIS</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li><a href="sale-order-new.html">新开出库单 <span class="sr-only">(current)</span></a></li>
+                <li class="active"><a href="#">出货单列表</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">系统管理<span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">用户设置</a></li>
+                        <li><a href="#">修改密码</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">One more separated link</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <!--<form class="navbar-form navbar-left" role="search">
+            <div class="form-group">
+              <input type="text" class="form-control" placeholder="Search">
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+          </form>-->
+            <ul class="nav navbar-nav navbar-right">
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" id="kis-u" data-toggle="dropdown" role="button"
+                       aria-haspopup="true" aria-expanded="false">
+                        <script>
+                            document.write(user.name)
+                        </script>
+                        <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">用户设置</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a data-toggle="modal" data-target="#myModal" href="javascript:void(0);">退出账户</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container-fluid -->
+</nav>
+
+
+<style type="text/css">
+    .container {
+        width: 100%;
+    }
+
+    .ui-autocomplete {
+        max-height: 350px;
+        /*高度值*/
+        overflow-y: auto;
+        /*超过高度出现滚动条*/
+        /*width:300px;*/
+        overflow-x: hidden;
+    }
+
+    .ui-autocomplete-category {
+        font-weight: bold;
+        padding: .2em .4em;
+        margin: .8em 0 .2em;
+        line-height: 1.5;
+    }
+
+    .bill_table td {
+        padding: 10px 0px;
+        vertical-align: middle;
+    }
+
+    .bill_product_table {
+        border-collapse: collapse;
+        border: 1px solid #aaa;
+    }
+
+    .bill_product_table th {
+        text-align: center;
+        border: 1px solid #aaa;
+        padding: 20px auto;
+        height: 40px;
+    }
+
+    .bill_product_table td {
+        text-align: left;
+        padding: 4px 0.5% 4px 0.5%;
+        height: 32px;
+        vertical-align: middle;
+        border: 1px solid #aaa;
+        /*background-color:#eee;*/
+    }
+
+    /*.odd {
+      background-color: #eee
+    }*/
+
+    input {
+        border: 1px solid steelblue;
+        height: 30px;
+        line-height: 30px;
+        padding-left: 8px;
+
+    }
+
+    .bill_product_table input {
+        width: 100%;
+        background-color: #fafafa;
+        height: 30px;
+        line-height: 30px;
+        border: 1px solid steelblue;
+    }
+
+    /*
+         .product_modal select>option {
+            display:block;
+           font-size: 14px;
+           padding-top: 6px;
+           padding-bottom:6px;
+        }*/
+
+    .select2-container--default .select2-selection--single {
+        background-color: #fff;
+        border: 1px solid steelblue;
+        border-radius: 0px;
+        height: 30px;
+
+    }
+</style>
+
+
+<div class="container">
+    <table class="table table-condensed">
+
+    </table>
+   </div>
+<!-- /container -->
+
+<div style="text-align:center; margin-top:40px;">
+    <button class="btn btn-default btn-primary" type="submit" onclick="document.location.reload()"> 重 填</button>
+    <button class="btn btn-default btn-primary" style="margin-left:150px;" onclick="print_order()"> 打 印</button>
+</div>
+
+<script src="scripts/bootstrap/js/bootstrap.js"></script>
+<div id="__m"></div>
+</body>
+</html>

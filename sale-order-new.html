@@ -105,7 +105,7 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
                 <li class="active"><a href="#">新开出库单 <span class="sr-only">(current)</span></a></li>
-                <li><a href="javascript:findByOrderNumber(100052)">findbyordernumber</a></li>
+                <li><a href="sale-order-list.html">出货单列表</a></li>  <!--javascript:findByOrderNumber(100052)-->
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                        aria-expanded="false">系统管理<span class="caret"></span></a>
@@ -385,7 +385,7 @@
                 var r = ipc.sendSync('session', {opt: 'put', key: 'order', value: {order_info: json_data, type:"select"}});
                 $('#__m').modal('show')
                 //var r = ipc.sendSync('hide_main_window', {});
-                p_win = window.open('sale-order-preview.html', '打印', "width=900,height=600,alwaysOnTop=true");
+                p_win = window.open('sale-order-preview.html', '打印', "width=800,height=600,alwaysOnTop=true");
                 window.onfocus = function () {
                     if (!p_win.closed) {
                         p_win.focus();
