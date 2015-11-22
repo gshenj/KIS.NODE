@@ -1,0 +1,73 @@
+.container {
+    width: 100%;
+}
+
+.ui-autocomplete {
+    max-height: 350px;
+    /*高度值*/
+    overflow-y: auto;
+    /*超过高度出现滚动条*/
+    /*width:300px;*/
+    overflow-x: hidden;
+}
+
+.ui-autocomplete-category {
+    font-weight: bold;
+    padding: .2em .4em;
+    margin: .8em 0 .2em;
+    line-height: 1.5;
+}
+
+.bill_table td {
+    padding: 10px 0px;
+    vertical-align: middle;
+}
+
+.bill_product_table {
+    border-collapse: collapse;
+    border: 1px solid #aaa;
+}
+
+.bill_product_table th {
+    text-align: center;
+    border: 1px solid #aaa;
+    padding: 20px auto;
+    height: 40px;
+}
+
+.bill_product_table td {
+    text-align: left;
+    padding: 4px 0.5% 4px 0.5%;
+    height: 32px;
+    vertical-align: middle;
+    border: 1px solid #aaa;
+    /*background-color:#eee;*/
+}
+
+/*.odd {
+  background-color: #eee
+}*/
+
+input {
+    border: 1px solid steelblue;
+    height: 30px;
+    line-height: 30px;
+    padding-left: 8px;
+
+}
+
+.bill_product_table input {
+    width: 100%;
+    background-color: #fafafa;
+    height: 30px;
+    line-height: 30px;
+    border: 1px solid steelblue;
+}
+
+.select2-container--default .select2-selection--single {
+    background-color: #fff;
+    border: 1px solid steelblue;
+    border-radius: 0px;
+    height: 30px;
+
+}

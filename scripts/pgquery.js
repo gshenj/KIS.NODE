@@ -38,6 +38,10 @@ var setUpdateOrderNumber = "update sale_order_number set order_number=order_numb
 //var getCurrentOrderNumber = "select order_number from sale_order_number";
 var getCurrentOrderNumber = "select nextval('seq_order_number') as order_number";
 
-var addSaleOrder = "insert into sale_order_json(order_number, data, data1) values($1, $2, $3)"
+var addSaleOrder = "insert into sale_order_json(order_number, data, data1) values($1, $2, $3)";
 
-var findSaleOrder = "select data,order_number from sale_order_json where order_number = $1"
+var findAllSaleOrder = "select data,order_number from sale_order_json order by order_number desc limit $1 offset $2";  // limit 20 offset 0
+var countAllSaleOrder = "select count(*) as cnt from sale_order_json";
+
+
+var findSaleOrder = "select data,order_number from sale_order_json where order_number = $1";
