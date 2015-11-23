@@ -47,7 +47,7 @@
                 $(this).parent().addClass("active")
 
                 if (target == '__list__') {
-
+                    listOrders(20, 0)
                 }
             })
         })
@@ -60,6 +60,7 @@
     <script src="scripts/select2.full.min.js"></script>
     <script src="scripts/accounting.min.js"></script>
     <script src="scripts/bootstrap/js/bootstrap.js"></script>
+    <script src="scripts/dateformat.js"></script>
 
     <!-- Le styles -->
     <!-- Bootstrap -->
@@ -214,7 +215,7 @@
 
 <!--/**container __list__****************************************************/-->
 <div id="__list__" class="container" style="display:none;">
-    <table class="table table-condensed table-hover table-bordered">
+    <table id="list_table" class="table table-condensed table-hover table-bordered">
         <tr>
             <th>订单编号</th>
             <th>送货日期</th>
@@ -224,22 +225,14 @@
             <th>录入时间</th>
             <th>操作</th>
         </tr>
-        <tr>
-            <td>测试</td>
-            <td>测试</td>
-            <td>测试</td>
-            <td>测试</td>
-            <td>测试</td>
-            <td>测试</td>
-            <td><a href="#">打印</a></td>
-        </tr>
+
     </table>
 
 </div>
 
 <!--/**container __sys__****************************************************/-->
 <div id="__sys__" class="container" style="display:none;">
-    <table class="table table-condensed table-hover table-bordered">
+    <table id="sys_table" class="table table-condensed table-hover table-bordered">
         <tr>
             <th>订单编号</th>
             <th>送货日期</th>
@@ -249,15 +242,7 @@
             <th>录入时间</th>
             <th>操作</th>
         </tr>
-        <tr>
-            <td>测试</td>
-            <td>测试</td>
-            <td>测试</td>
-            <td>测试</td>
-            <td>测试</td>
-            <td>测试</td>
-            <td><a href="#">打印</a></td>
-        </tr>
+
     </table>
 
 </div>
@@ -602,8 +587,9 @@
                 var count = result.rows[0].cnt;
                 console.log("order size -> " + count);
                 pgquery({
-                    sql: findAllSaleOrder, params: [limit, offset], doResult: function (result) {
-                        showRows(result.rows);
+                    sql: findAllSaleOrder, params: [limit, offset], doResult: function (result1) {
+
+                        showRows(result1.rows);
                     }
                 });
             }
@@ -613,6 +599,21 @@
     function showRows(rows) {
         //遍历结果显示表格
         //todo
+        for (var i=0; i<rows.length; i++) {
+            var s = '<tr>';
+            s += '<td>' + rows[i].order_number + '</td>';
+            s += '<td>'+rows[i].data.sale_date+'</td>'
+            s += '<td>'+rows[i].data.customer_name+'</td>'
+            s += '<td>'+JSON.stringify(rows[i].data.modals)+'</td>'
+            s += ' <td>'+rows[i].data.create_user+'</td>'
+            s += '<td>'+rows[i].create_date.Format("yyyy-MM-dd hh:mm")+'</td>'
+            s += '<td><a href="#">打印</a></td>'
+            s += '</tr>';
+            $(s).appendTo('#list_table');
+            console.log(s)
+           // $('#list_table').append(s)
+        }
+
     }
 
     $(function () {

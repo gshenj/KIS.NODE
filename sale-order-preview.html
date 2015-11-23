@@ -101,7 +101,7 @@
                // $(src).html('正在保存...')
                 pgquery({
                     sql: addSaleOrder,
-                    params: [order.order_number, order_info, order_info],
+                    params: [order.order_number, order_info.customer_id, order_info.sale_date, order_info],
                     doResult: function (result) {
                         console.log(JSON.stringify(result))
                         //$(src).html('保存成功，开始打印...');
