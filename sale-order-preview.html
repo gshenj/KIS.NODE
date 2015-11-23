@@ -11,7 +11,7 @@
         $ = jQuery;
         var ipc = require('ipc');
         var order = ipc.sendSync('session', {opt: 'get', key: 'order'});
-        console.log(JSON.stringify(order)); // prints "pong"
+      //  console.log(JSON.stringify(order)); // prints "pong"
 
         var type = order.type;
         var order_info = order.order_info;
@@ -23,10 +23,7 @@
 
         var printed = false;
         window.onbeforeunload = function() {
-            ipc.sendSync("hide_print_win", {});
-
-            if (printed)
-                var ret = ipc.sendSync('chg_url', {url:'/jquery-ui-example.html', printed:1});
+            ipc.sendSync("hide_print_win", {type:type,printed:printed});
         }
 
         $(function () {

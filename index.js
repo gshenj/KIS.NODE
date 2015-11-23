@@ -69,8 +69,11 @@ ipc.on('show_print_win', function(event, arg) {
 });
 
 ipc.on('hide_print_win', function(event, arg) {
-   // mainWindow.webContents.executeJavaScript('hide_overlay()');
-    mainWindow.webContents.send('hide_overlay', '');
+    console.log("arg")
+    console.log(arg)
+
+   //mainWindow.webContents.executeJavaScript('hide_overlay('+arg+')');
+    mainWindow.webContents.send('hide_overlay', arg);
 
     // ipc2.sendSync("hide_overlay", {})
     //event.sender.send("hide_overlay", {})
@@ -78,7 +81,7 @@ ipc.on('hide_print_win', function(event, arg) {
 });
 
 
-ipc.on('chg_url', function(event, arg) {
+ipc.on('jump_to_list', function(event, arg) {
     mainWindow.loadUrl('file://' + __dirname + arg.url);
     event.returnValue = true;
 });
