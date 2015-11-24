@@ -38,6 +38,7 @@
         }
 
         #list_table thead th {
+
             text-align:center;
             font-weight: bold;
             background-color:#eee;
@@ -70,7 +71,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" style="color:black; font-size:18px;" href="#">苏州元斌塑胶科技有限公司KIS</a>
+            <a class="navbar-brand">苏州元斌塑胶科技有限公司KIS</a>
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
@@ -116,8 +117,8 @@
 
 <!--/**container __new__*****************************************************/-->
 <div id="__new__" class="container">
-    <div style="text-algin:center;">
-        <table class="bill_table" style="width:100%; margin:20px auto 0px; text-algin:left;">
+    <div style="text-align:center; margin:10pt auto 0pt;">
+        <table class="bill_table" style="width:100%; text-align:left;">
             <tr>
                 <td colspan="3" style="padding-right:70px;">
                     <label for="customer_name">客户名称：</label>
@@ -185,6 +186,24 @@
 
 <!--/**container __list__****************************************************/-->
 <div id="__list__" class="container" style="display:none;">
+    <div style="margin-top:10pt;">
+        <div style="float:left; margin-left:2pt;">
+        <label for="customer_name_1">客户名称：</label>
+        <select id="customer_name_1" style="width:280px; ">
+            <option></option>
+        </select>
+        </div>
+        <div style="float:left; margin-left:20pt;">
+            <label for="sale_date_begin">送货日期：</label>
+            <input id="sale_date_begin" style="width:80pt;" />
+            <label for="sale_date_end">至：</label>
+            <input id="sale_date_end"   style="width:80pt;"  />
+        </div>
+        <div style="float:left; margin-left:20pt;">
+            <button>查询</button>
+        </div>
+    </div>
+    <div  style="clear:both; height:10pt;"></div>
     <table id="list_table" class="table table-condensed table-hover table-bordered">
         <thead>
         <tr>

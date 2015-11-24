@@ -2,6 +2,27 @@
  * Created by jin on 2015/11/23 0023.
  */
 
+var datepicker_options = {
+    changeMonth: true,
+    changeYear: true,
+    dateFormat: 'yy-mm-dd',//日期格式
+    clearText: "清除",//清除日期的按钮名称
+    closeText: "关闭",//关闭选择框的按钮名称
+    prevText: '<上月',
+    nextText: '下月>',
+    currentText: '今天',
+    yearSuffix: '年', //年的后缀
+    showMonthAfterYear: true,//是否把月放在年的后面
+    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+    monthNamesShort: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+    dayNames: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+    dayNamesShort: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
+    dayNamesMin: ['日', '一', '二', '三', '四', '五', '六'],
+    showButtonPanel: true,
+    gotoCurrent: true
+};
+
+
 
 var ipc = require('ipc');
 var user = ipc.sendSync('session', {opt: 'get', key: 'user'});
@@ -208,27 +229,16 @@ function print_order() {
     });
 }
 
+
+
+
 function initSaleDate() {
-    $("#sale_date").datepicker({
-        changeMonth: true,
-        changeYear: true,
-        dateFormat: 'yy-mm-dd',//日期格式
-        clearText: "清除",//清除日期的按钮名称
-        closeText: "关闭",//关闭选择框的按钮名称
-        prevText: '<上月',
-        nextText: '下月>',
-        currentText: '今天',
-        yearSuffix: '年', //年的后缀
-        showMonthAfterYear: true,//是否把月放在年的后面
-        monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
-        monthNamesShort: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
-        dayNames: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
-        dayNamesShort: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
-        dayNamesMin: ['日', '一', '二', '三', '四', '五', '六'],
-        showButtonPanel: true,
-        gotoCurrent: true
-    });
+
+    $("#sale_date").datepicker(datepicker_options);
     $("#sale_date").datepicker("setDate", new Date());
+    $("#sale_date_begin").datepicker(datepicker_options);
+    $("#sale_date_end").datepicker(datepicker_options);
+
 }
 
 function clear_modal_items() {
@@ -459,6 +469,14 @@ $(function () {
                 //allowClear: true,
                 placeholder: "请选择公司"
             })
+
+////////////////////////////////////////////////// for list.
+            $('#customer_name_1').select2({
+                data: customerData,
+                allowClear: true,
+                placeholder: "请选择公司"
+            })
+////////////////////////////////////////////////// for list.
 
             $('#customer_name').on('change',
                 function () {

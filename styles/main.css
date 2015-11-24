@@ -2,6 +2,17 @@
     width: 100%;
 }
 
+
+.navbar-brand {
+    color:black;
+    font-size:16pt;
+}
+.navbar-brand:hover{
+    cursor: default;
+}
+
+
+
 .ui-autocomplete {
     max-height: 350px;
     /*高度值*/
