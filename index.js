@@ -56,10 +56,9 @@ var win = null;
 ipc.on('show_print_win', function(event, arg) {
     win = new BrowserWindow({width: 800,
         height: 600
-        ,'auto-hide-menu-bar': true,
-        alwaysOnTop :true
+        ,'auto-hide-menu-bar': true
     });
-    win.setAlwaysOnTop(true);
+    win.show();
     win.loadUrl('file://' + __dirname + '/'+arg.url);
     win.on('closed', function() {
         win = null;
@@ -125,35 +124,10 @@ ipc.on('session', function(event, arg) {  // arg->{opt:'', key:'', value:''}
 //  93         } catch (e) {
 //  94             bln = false;
 //  95         }
- 96       
+//  96
         event.returnValue = bln;
      } else if (opt == 'clear') {
        session = {};
        event.returnValue = 'true';
      }
  });
- 
- 
-//  ipc.on('cookie', function(err, arg){
-//      var opt = arg.opt;
-//      var cookies = mainWindow.weContents.session.cookies
-//      if (opt == 'get') {
-//          cookies.get(arg.cookie, function(error, cookies) {
-//          if (error) throw error;
-//             console.log(cookies);
-//          });
-         
-//       } else if (opt == 'set') {
-//          cookies.set(arg.cookie, function(error, cookies) {
-//          if (error) throw error;
-//             console.log(cookies);
-//          });
-         
-//       } else if (opt=='remove') {
-//          cookies.remove(arg.cookie, function(error, cookies) {
-//          if (error) throw error;
-//             console.log(cookies);
-//          });
-//       }
-//   })
- 

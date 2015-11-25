@@ -23,7 +23,6 @@ var datepicker_options = {
 };
 
 
-
 var ipc = require('ipc');
 var user = ipc.sendSync('session', {opt: 'get', key: 'user'});
 console.log('Login user: ' + user.name); // prints "pong"
@@ -55,20 +54,27 @@ var logout = function () {
         console.log('User -> ' + user); // prints "pong"
     }
     document.location.href = "login.html"
+    //var remote = require("remote")
+    //remote.getCurrentWebContents().loadUrl('file://' + __dirname + "/login.html");
     // }
 }
+
 
 $(function () {
     $(".m_a").click(function () {
         $('.container').hide();
         var target = $(this).attr("data-target");
+        if (target == '__list__') {
+            initCustomerOfListOrder();
+            //listOrders(10, 0)
+        } else if (target == '__new__') {
+            initCustomerOfNewOrder();
+        }
+
         $("#" + target).show();
         $('.navbar-nav li').removeClass('active')
         $(this).parent().addClass("active")
 
-        if (target == '__list__') {
-            listOrders(10, 0)
-        }
     })
 })
 
@@ -86,12 +92,14 @@ function findByOrderNumber(order_number) {
             });
             $('#__m').modal('show')
             //var r = ipc.sendSync('hide_main_window', {});
-            p_win = window.open('sale-order-preview.html', '打印', "width=800,height=600,alwaysOnTop=true");
-            window.onfocus = function () {
-                if (!p_win.closed) {
-                    p_win.focus();
-                }
-            }
+            /* p_win = window.open('sale-order-preview.html', '打印', "width=800,height=600");
+             window.onfocus = function () {
+             if (!p_win.closed) {
+             p_win.focus();
+             }
+             }*/
+
+            var r = ipc.sendSync('show_print_win', {url: 'sale-order-preview.html'});
         }
     });
 }
@@ -213,35 +221,30 @@ function print_order() {
             //console.log(JSON.stringify(order_info))
             var r = ipc.sendSync('session', {opt: 'put', key: 'order', value: order});
 
-            // way1
-            // r = ipc.sendSync('show_print_win', {url:'sale-order-preview.html'});
-
-
             $('#__m').modal('show')
-            //var r = ipc.sendSync('hide_main_window', {});
-            p_win = window.open('sale-order-preview.html', '打印', "width=900,height=600,alwaysOnTop=true");
-            window.onfocus = function () {
-                if (!p_win.closed) {
-                    p_win.focus();
-                }
-            }
+            /* p_win = window.open('sale-order-preview.html', '打印', "width=800,height=600");
+             window.onfocus = function () {
+             if (!p_win.closed) {
+             p_win.focus();
+             }
+             }*/
+            var r = ipc.sendSync('show_print_win', {url: 'sale-order-preview.html'});
         }
     });
 }
 
 
-
-
-function initSaleDate() {
-
-    $("#sale_date").datepicker(datepicker_options);
+//todo
+var restOrderInput = function () {
     $("#sale_date").datepicker("setDate", new Date());
-    $("#sale_date_begin").datepicker(datepicker_options);
-    $("#sale_date_end").datepicker(datepicker_options);
-
+    $('#customer_address').val();
+    $('#customer_principal').val();
+    $('#customer_phone').val();
 }
 
-function clear_modal_items() {
+
+function reset_modal_items() {
+
     $('.product_category').val('');
     $('.product_units').val('');
     $('.product_unit_price').val('');
@@ -386,7 +389,7 @@ function showRows(rows) {
     //todo
     for (var i = 0; i < rows.length; i++) {
         var s = '<tr>';
-        s += '<td><a href="#" onclick="findByOrderNumber('+rows[i].order_number+')">' + rows[i].order_number + '</a></td>';
+        s += '<td><a href="#" onclick="findByOrderNumber(' + rows[i].order_number + ')">' + rows[i].order_number + '</a></td>';
         s += '<td>' + rows[i].data.sale_date + '</td>'
         s += '<td>' + rows[i].data.customer_name + '</td>'
         s += '<td>' + showModalText(rows[i].data.modals) + '</td>'
@@ -402,33 +405,310 @@ function showRows(rows) {
 
 function showModalText(modals) {
     var r = "";
-    if (modals.length>0) {
+    if (modals.length > 0) {
         var modal0 = modals[0];
-        r = modal0.product_modal_name +","+modal0.product_category_name+","+
-        modal0.product_num + modal0.product_units
+        r = modal0.product_modal_name + "," + modal0.product_category_name + "," +
+            modal0.product_num + modal0.product_units
 
-        if (modals.length>1) {
-            r +="   ..."
+        if (modals.length > 1) {
+            r += "   ..."
         }
     }
 
     return r;
 }
 
-$(function () {
-    //$('#customer_name').html();
-    $('#customer_name').select2();
 
+var prepareCustomersData = function (result) {
+    // clear customerData
+    customerData = [];
+    var rows = result.rows;
+    if (rows.length > 0) {
+        for (var i = 0; i < rows.length; i++) {
+            var found = false;
+            var _customer_option = {id: rows[i].customer_id, text: rows[i].customer_name};
+            var _customer_info = {
+                address: rows[i].address,
+                phone: rows[i].mobile_number,
+                principal: rows[i].principal
+            };
+            for (var j = 0; j < customerData.length; j++) {
+                if (rows[i].city_name == customerData[j].text) {
+                    customerData[j].children.push(_customer_option)
+                    customerInfo['"' + rows[i].customer_id + '"'] = _customer_info;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                customerData.push({text: rows[i].city_name, children: [_customer_option]});
+                customerInfo['"' + rows[i].customer_id + '"'] = _customer_info;
+            }
+        }
+    }
+}
+
+var prepareCustomers = function (callback) {
+    pgquery({
+        sql: getCustomers, params: [], doResult: function (result) {
+            prepareCustomersData(result);
+            callback()
+
+        }
+    });
+}
+
+var callbackOnCustomersOfListOrders = function () {
+    $('#customer_name_1').select2('destroy');
+    $('#customer_name_1').select2({
+        data: customerData,
+        allowClear: true,
+        placeholder: "请选择公司"
+    })
+
+    listOrders(15,0);
+}
+var callbackOnCustomersOfNewOrder = function () {
+
+
+
+    //reset
+    $('#customer_name').unbind("change");
+    $('#customer_name').select2('destroy');
+
+    $('#customer_name').select2({
+        data: customerData,
+        placeholder: "请选择公司"
+    })
+
+    $('#customer_address').val('');
+    $('#customer_phone').val('');
+    $('#customer_principal').val('');
+    $('.product_modal').html('<option class="opt" value="0">&nbsp;</option>');
+    $('.product_modal').select2({width: '100%'});
+    reset_modal_items();
+
+    $('#customer_name').on('change',
+        function () {
+            var _id = $('#customer_name').val();
+            $('#customer_address').val(customerInfo['"' + _id + '"'].address);
+            $('#customer_phone').val(customerInfo['"' + _id + '"'].phone);
+            $('#customer_principal').val(customerInfo['"' + _id + '"'].principal);
+
+            // get product_modals
+            var ccid = $('#customer_name').val()
+            modals = [];
+            pgquery({
+                sql: getProductModals, params: [ccid], doResult: function (res) {
+
+                    if (res.rows.length > 0) {
+                        // alert(result.rows.length)
+                        for (var i = 0; i < res.rows.length; i++) {
+                            var category_id = res.rows[i].category_id;
+                            var category_name = res.rows[i].category_name;
+                            var modal_name = res.rows[i].modal_name;
+                            var modal_id = res.rows[i].modal_id;
+                            var units_id = res.rows[i].units_id;
+                            var units_name = res.rows[i].units_name;
+                            var suggest_unit_price = res.rows[i].suggest_unit_price;
+                            var found = false;
+
+                            var _option_modal = {
+                                modal_name: modal_name,
+                                modal_id: modal_id,
+                                category_id: category_id,
+                                category_name: category_name,
+                                units_id: units_id,
+                                units_name: units_name,
+                                suggest_unit_price: suggest_unit_price
+                            };
+
+                            for (var j = 0; j < modals.length; j++) {
+                                if (modals[j].category_id == category_id) {
+                                    modals[j].options.push(_option_modal)
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (!found)
+                                modals.push({
+                                    category_id: category_id,
+                                    category_name: category_name,
+                                    options: [_option_modal]
+                                })
+                        }
+                    }
+
+                    var s = '<option class="opt" value="0">&nbsp;</option>';
+                    for (var k = 0; k < modals.length; k++) {
+                        s += '<optgroup label="' + modals[k].category_name + '">';
+                        var options = modals[k].options;
+                        for (var x = 0; x < options.length; x++) {
+                            s += '<option class="opt" units="' + options[x].units + '" value="' + options[x].modal_id + '">' + options[x].modal_name + '</option>'
+                        }
+                        s += '</optgroup>';
+                    }
+
+                    $('.product_modal').unbind('change');
+                    $('.product_modal').select2('destroy');
+                    $('.product_modal').html(s);
+                    $('.product_modal').select2({width: '100%'});
+                    reset_modal_items();
+                    $('.product_modal').on('change', function () {
+                        change_modal(this);
+                    });
+                }
+            });
+        });
+}
+
+var initCustomerOfNewOrder = function () {
+    prepareCustomers(callbackOnCustomersOfNewOrder)
+}
+
+var initCustomerOfListOrder = function () {
+    prepareCustomers(callbackOnCustomersOfListOrders)
+}
+
+/*
+ var prepareCustomerOfList = function (result) {
+ var rows = result.rows;
+ if (rows.length > 0) {
+ for (var i = 0; i < rows.length; i++) {
+ var found = false;
+ var _customer_option = {id: rows[i].customer_id, text: rows[i].customer_name};
+ var _customer_info = {
+ address: rows[i].address,
+ phone: rows[i].mobile_number,
+ principal: rows[i].principal
+ };
+ for (var j = 0; j < customerData.length; j++) {
+ if (rows[i].city_name == customerData[j].text) {
+ customerData[j].children.push(_customer_option)
+ customerInfo['"' + rows[i].customer_id + '"'] = _customer_info;
+ found = true;
+ break;
+ }
+ }
+ if (!found) {
+ customerData.push({text: rows[i].city_name, children: [_customer_option]});
+ customerInfo['"' + rows[i].customer_id + '"'] = _customer_info;
+ }
+ }
+ }
+
+ $('#customer_name').select2('destroy');
+ $('#customer_name').select2({
+ data: customerData,
+ //allowClear: true,
+ placeholder: "请选择公司"
+ })
+
+ ////////////////////////////////////////////////// for list.
+ $('#customer_name_1').select2({
+ data: customerData,
+ allowClear: true,
+ placeholder: "请选择公司"
+ })
+ ////////////////////////////////////////////////// for list.
+
+ $('#customer_name').on('change',
+ function () {
+ var _id = $('#customer_name').val();
+ $('#customer_address').val(customerInfo['"' + _id + '"'].address);
+ $('#customer_phone').val(customerInfo['"' + _id + '"'].phone);
+ $('#customer_principal').val(customerInfo['"' + _id + '"'].principal);
+
+ // get product_modals
+ var ccid = $('#customer_name').val()
+ modals = new Array();
+ pgquery({
+ sql: getProductModals, params: [ccid], doResult: function (res) {
+
+ if (res.rows.length > 0) {
+ // alert(result.rows.length)
+ for (var i = 0; i < res.rows.length; i++) {
+ var category_id = res.rows[i].category_id;
+ var category_name = res.rows[i].category_name;
+ var modal_name = res.rows[i].modal_name;
+ var modal_id = res.rows[i].modal_id;
+ var units_id = res.rows[i].units_id;
+ var units_name = res.rows[i].units_name;
+ var suggest_unit_price = res.rows[i].suggest_unit_price;
+ var found = false;
+
+ var _option_modal = {
+ modal_name: modal_name,
+ modal_id: modal_id,
+ category_id: category_id,
+ category_name: category_name,
+ units_id: units_id,
+ units_name: units_name,
+ suggest_unit_price: suggest_unit_price
+ };
+
+ for (var j = 0; j < modals.length; j++) {
+ if (modals[j].category_id == category_id) {
+ modals[j].options.push(_option_modal)
+ found = true;
+ break;
+ }
+ }
+
+ if (!found)
+ modals.push({
+ category_id: category_id,
+ category_name: category_name,
+ options: [_option_modal]
+ })
+ }
+ }
+
+ var s = '<option class="opt" value="0">&nbsp;</option>';
+ for (var k = 0; k < modals.length; k++) {
+ s += '<optgroup label="' + modals[k].category_name + '">';
+ var options = modals[k].options;
+ for (var x = 0; x < options.length; x++) {
+ s += '<option class="opt" units="' + options[x].units + '" value="' + options[x].modal_id + '">' + options[x].modal_name + '</option>'
+ }
+ s += '</optgroup>';
+ }
+
+ $('.product_modal').select2('destroy');
+ $('.product_modal').html(s);
+ clear_modal_items();
+ $('.product_modal').select2({width: '100%'});
+ $('.product_modal').on('change', function () {
+ change_modal(this);
+ });
+ }
+ });
+ });
+ }
+ */
+
+$(function () {
+    $('#customer_name').select2();
+    $('#customer_name_1').select2();
+
+    $("#sale_date").datepicker(datepicker_options);
+    $("#sale_date_begin").datepicker(datepicker_options);
+    $("#sale_date_end").datepicker(datepicker_options);
+
+    initNewOrder();
+});
+
+
+function initNewOrder() {
     for (var i = 2; i <= 5; i++) {
         var tr = $('tr[idx="1"]').clone();
         $(tr).attr("idx", i);
         $(tr).insertBefore($('#total_sum_tr'));
-
     }
 
     $('.product_modal').html('<option class="opt" value="0">&nbsp;</option>');
     $('.product_modal').select2({width: '100%'});
-    initSaleDate();
     $('.product_num').on('change', function () {
         changeNumOrUnitPrice(this);
     })
@@ -436,124 +716,16 @@ $(function () {
         changeNumOrUnitPrice(this);
     })
 
-    pgquery({
-        sql: getCustomers, params: [], doResult: function (result) {
-            var rows = result.rows;
-            if (rows.length > 0) {
-                for (var i = 0; i < rows.length; i++) {
-                    var found = false;
-                    var _customer_option = {id: rows[i].customer_id, text: rows[i].customer_name};
-                    var _customer_info = {
-                        address: rows[i].address,
-                        phone: rows[i].mobile_number,
-                        principal: rows[i].principal
-                    };
-                    for (var j = 0; j < customerData.length; j++) {
-                        if (rows[i].city_name == customerData[j].text) {
-                            customerData[j].children.push(_customer_option)
-                            customerInfo['"' + rows[i].customer_id + '"'] = _customer_info;
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        customerData.push({text: rows[i].city_name, children: [_customer_option]});
-                        customerInfo['"' + rows[i].customer_id + '"'] = _customer_info;
-                    }
-                }
-            }
-
-            $('#customer_name').select2('destroy');
-            $('#customer_name').select2({
-                data: customerData,
-                //allowClear: true,
-                placeholder: "请选择公司"
-            })
-
-////////////////////////////////////////////////// for list.
-            $('#customer_name_1').select2({
-                data: customerData,
-                allowClear: true,
-                placeholder: "请选择公司"
-            })
-////////////////////////////////////////////////// for list.
-
-            $('#customer_name').on('change',
-                function () {
-                    var _id = $('#customer_name').val();
-                    $('#customer_address').val(customerInfo['"' + _id + '"'].address);
-                    $('#customer_phone').val(customerInfo['"' + _id + '"'].phone);
-                    $('#customer_principal').val(customerInfo['"' + _id + '"'].principal);
-
-                    // get product_modals
-                    var ccid = $('#customer_name').val()
-                    modals = new Array();
-                    pgquery({
-                        sql: getProductModals, params: [ccid], doResult: function (res) {
-
-                            if (res.rows.length > 0) {
-                                // alert(result.rows.length)
-                                for (var i = 0; i < res.rows.length; i++) {
-                                    var category_id = res.rows[i].category_id;
-                                    var category_name = res.rows[i].category_name;
-                                    var modal_name = res.rows[i].modal_name;
-                                    var modal_id = res.rows[i].modal_id;
-                                    var units_id = res.rows[i].units_id;
-                                    var units_name = res.rows[i].units_name;
-                                    var suggest_unit_price = res.rows[i].suggest_unit_price;
-                                    var found = false;
-
-                                    var _option_modal = {
-                                        modal_name: modal_name,
-                                        modal_id: modal_id,
-                                        category_id: category_id,
-                                        category_name: category_name,
-                                        units_id: units_id,
-                                        units_name: units_name,
-                                        suggest_unit_price: suggest_unit_price
-                                    };
-
-                                    for (var j = 0; j < modals.length; j++) {
-                                        if (modals[j].category_id == category_id) {
-                                            modals[j].options.push(_option_modal)
-                                            found = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (!found)
-                                        modals.push({
-                                            category_id: category_id,
-                                            category_name: category_name,
-                                            options: [_option_modal]
-                                        })
-                                }
-                            }
-
-                            var s = '<option class="opt" value="0">&nbsp;</option>';
-                            for (var k = 0; k < modals.length; k++) {
-                                s += '<optgroup label="' + modals[k].category_name + '">';
-                                var options = modals[k].options;
-                                for (var x = 0; x < options.length; x++) {
-                                    s += '<option class="opt" units="' + options[x].units + '" value="' + options[x].modal_id + '">' + options[x].modal_name + '</option>'
-                                }
-                                s += '</optgroup>';
-                            }
-
-                            $('.product_modal').select2('destroy');
-                            $('.product_modal').html(s);
-                            clear_modal_items();
-                            $('.product_modal').select2({width: '100%'});
-                            $('.product_modal').on('change', function () {
-                                change_modal(this);
-                            });
-                        }
-                    });
-                });
-        }
-    });
 
 
-});
+    initCustomerOfNewOrder();
+    $("#sale_date").datepicker("setDate", new Date());
+}
 
 
+function initListOrder() {
+   //
+    initCustomerOfListOrder();
+    $("#sale_date_begin").datepicker("setDate", new Date());
+    $("#sale_date_end").datepicker("setDate", new Date());
+}

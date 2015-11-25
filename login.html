@@ -2,187 +2,189 @@
 <html lang="zh-cn">
 
 <head>
-  <meta charset="utf-8">
-  <title>苏州元斌塑胶科技有限公司-系统登录</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="">
-  <meta name="author" content="">
+    <meta charset="utf-8">
+    <title>苏州元斌塑胶科技有限公司-系统登录</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-  <!-- Le styles -->
-  <script type="text/javascript">
-    jQuery = require('jquery')
-    console.log(jQuery.fn.jquery)
-  </script>
-  <script src="scripts/pgquery.js"></script>
-  
-  
-  <!--<script src="jq.js"></script>-->
-  <!--<script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>-->
-  <script src="scripts/bootstrap/js/bootstrap.js"></script>
+    <!-- Le styles -->
+    <script type="text/javascript">
+        jQuery = require('jquery')
+        console.log(jQuery.fn.jquery)
+    </script>
+    <script src="scripts/pgquery.js"></script>
 
-  <!-- Le styles -->
-  <!-- Bootstrap -->
-  <link href="scripts/bootstrap/css/bootstrap.css" rel="stylesheet">
-  <style type="text/css">
-    body {
-      padding-top: 40px;
-      padding-bottom: 40px;
-      background-color: #eee;
-    }
-    
-    .form-signin {
-      max-width: 330px;
-      padding: 15px;
-      margin: 0 auto;
-    }
-    
-    .form-signin .form-signin-heading,
-    .form-signin .checkbox {
-      margin-bottom: 10px;
-    }
-    
-    .form-signin .checkbox {
-      font-weight: normal;
-    }
-    
-    .form-signin .form-control {
-      position: relative;
-      height: auto;
-      -webkit-box-sizing: border-box;
-      -moz-box-sizing: border-box;
-      box-sizing: border-box;
-      padding: 10px;
-      font-size: 16px;
-      margin-top: 20px;
-    }
-    
-    .form-signin .form-control:focus {
-      z-index: 2;
-    }
-    
-    .form-signin input[type="email"] {
-      margin-bottom: -1px;
-      border-bottom-right-radius: 0;
-      border-bottom-left-radius: 0;
-    }
-    
-    .form-signin input[type="password"] {
-      margin-bottom: 10px;
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-    }
-  </style>
 
-  <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-  <!--[if lt IE 9]>
-      <script src="../assets/js/html5shiv.js"></script>
+    <!--<script src="jq.js"></script>-->
+    <!--<script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>-->
+    <script src="scripts/bootstrap/js/bootstrap.js"></script>
+
+    <!-- Le styles -->
+    <!-- Bootstrap -->
+    <link href="scripts/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <style type="text/css">
+        body {
+            padding-top: 40px;
+            padding-bottom: 40px;
+            background-color: #eee;
+        }
+
+        .form-signin {
+            max-width: 330px;
+            padding: 15px;
+            margin: 0 auto;
+        }
+
+        .form-signin .form-signin-heading,
+        .form-signin .checkbox {
+            margin-bottom: 10px;
+        }
+
+        .form-signin .checkbox {
+            font-weight: normal;
+        }
+
+        .form-signin .form-control {
+            position: relative;
+            height: auto;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .form-signin .form-control:focus {
+            z-index: 2;
+        }
+
+        .form-signin input[type="email"] {
+            margin-bottom: -1px;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .form-signin input[type="password"] {
+            margin-bottom: 10px;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+    </style>
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+    <script src="../assets/js/html5shiv.js"></script>
     <![endif]-->
 
-  <!-- Fav and touch icons -->
-  <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
-  <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
-  <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
-  <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">
-  <link rel="shortcut icon" href="../assets/ico/favicon.png">-->
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">
+    <link rel="shortcut icon" href="../assets/ico/favicon.png">-->
 
 
+    <script>
 
-  <script>
-    
-    var nextPage = 'sale-order-new.html';
-    var remote = require('remote');
-    var ipc = require('ipc');
-    
-    
-    var login = function() {
-	    var uname = document.querySelector("#username").value;
-        console.log(uname);
-        pgquery({sql:'SELECT * from kis_user where name=$1', params:[uname], doResult:doLogin})
-        return false;
-    };
-    
-    var doLogin = function(result) {
-        var pwd = document.querySelector("#password").value
-        // console.log(pwd);
-        if (result.rows.length>0 && result.rows[0].passwd==pwd) {
+        var nextPage = 'sale-order.html';
+        var remote = require('remote');
+        var ipc = require('ipc');
 
-           var uname = result.rows[0].name;
-            var uid = result.rows[0].id;
-           ipc.sendSync('session', {opt:'put', key:'user', value:{name:uname, id:uid}}); // prints "pong"
-           if (document.querySelector('#remember-me').checked) {
-              setUnameToCookie(uname);
-              
-           } else {
-              removeUnameFromCookie(uname);
-           }
-           
-           window.document.location.href=nextPage;
 
-        } else {
-            alert('账户或密码错误！')
+        var login = function () {
+            var uname = document.querySelector("#username").value;
+            console.log(uname);
+            pgquery({sql: 'SELECT * from kis_user where name=$1', params: [uname], doResult: doLogin})
+            return false;
+        };
+
+        var doLogin = function (result) {
+            var pwd = document.querySelector("#password").value
+            // console.log(pwd);
+            if (result.rows.length > 0 && result.rows[0].passwd == pwd) {
+
+                var uname = result.rows[0].name;
+                var uid = result.rows[0].id;
+                ipc.sendSync('session', {opt: 'put', key: 'user', value: {name: uname, id: uid}}); // prints "pong"
+                if (document.querySelector('#remember-me').checked) {
+                    setUnameToCookie(uname);
+
+                } else {
+                    removeUnameFromCookie(uname);
+                }
+
+                document.location.href = nextPage;
+            } else {
+                alert('账户或密码错误！')
+            }
         }
-    }
-    
 
-    var getCookieName = function() {
-      var webContents = remote.getCurrentWebContents();
-      webContents.session.cookies.get({url:'http://localhost/', name:'kis-u'},  function(error, cookies) {
-        if (error) throw error;
-          console.log("cookies" + cookies);
-          if (cookies.length>0) {
-             document.querySelector('#username').value=cookies[0].value
-             document.querySelector('#remember-me').checked=true;
-             
-          } else {
-            document.querySelector('#remember-me').checked=false;
-          }
-        }) 
-    }
-    
-    var setUnameToCookie = function(u) {
-        var webContents = remote.getCurrentWebContents();
-        var date = new Date();
-        var t = date.getTime() + 60*60*24*365;
-        webContents.session.cookies.set({ url:'http://localhost/',name:'kis-u', expirationDate: t,  value:u},  function(error, cookies) {
-        if (error) throw error;
-          console.log(cookies);
-         
-        }) 
-    }
-    
-     var removeUnameFromCookie = function(u) {
-        var webContents = remote.getCurrentWebContents();
-        webContents.session.cookies.remove({url:'http://localhost/', name:'kis-u'},  function(error, cookies) {
-        if (error) throw error;
-          console.log(cookies);
-        }) 
-    }
-    
-    getCookieName();
-  </script>
+        var getCookieName = function () {
+            var webContents = remote.getCurrentWebContents();
+            webContents.session.cookies.get({url: 'http://localhost/', name: 'kis-u'}, function (error, cookies) {
+                if (error) throw error;
+                if (cookies.length > 0) {
+                    document.querySelector('#username').value = cookies[0].value
+                    document.querySelector('#remember-me').checked = true;
+
+                } else {
+                    document.querySelector('#remember-me').checked = false;
+                }
+            })
+        }
+
+        var setUnameToCookie = function (u) {
+            var webContents = remote.getCurrentWebContents();
+            var date = new Date();
+            var t = date.getTime() + 60 * 60 * 24 * 365;
+            webContents.session.cookies.set({
+                url: 'http://localhost/',
+                name: 'kis-u',
+                expirationDate: t,
+                value: u
+            }, function (error, cookies) {
+                if (error) throw error;
+                console.log(cookies);
+
+            })
+        }
+
+        var removeUnameFromCookie = function (u) {
+            var webContents = remote.getCurrentWebContents();
+            webContents.session.cookies.remove({url: 'http://localhost/', name: 'kis-u'}, function (error, cookies) {
+                if (error) throw error;
+                console.log(cookies);
+            })
+        }
+    </script>
 </head>
 
 <body>
 
-  <div class="container">
+<div class="container">
 
     <form class="form-signin" onsubmit="return false;">
-      <h2 class="form-signin-heading">欢迎登录</h2>
-      <label for="username" class="sr-only">账户</label>
-      <input type="text" class="form-control" id="username" placeholder="账户" required autofocus>
-      <label for="password" class="sr-only">密码</label>
-      <input type="password" class="form-control" id="password" value="1234" placeholder="密码" required>
-      <div class="checkbox">
-        <label>
-          <input type="checkbox" id="remember-me" value="remember-me"> 记住账户
-        </label>
-      </div>
-      <button class="btn btn-lg btn-primary btn-block" type="submit" onclick="login()">登 录</button>
+        <h2 class="form-signin-heading">欢迎登录</h2>
+        <label for="username" class="sr-only">账户</label>
+        <input type="text" class="form-control" id="username" placeholder="账户" required autofocus>
+        <label for="password" class="sr-only">密码</label>
+        <input type="password" class="form-control" id="password" value="1234" placeholder="密码" required>
+
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" id="remember-me" value="remember-me"> 记住账户
+            </label>
+        </div>
+        <button class="btn btn-lg btn-primary btn-block" type="submit" onclick="login()">登 录</button>
     </form>
 
-  </div>
-  <!-- /container -->
-
+</div>
+<!-- /container -->
+<script>
+    getCookieName();
+</script>
 </body>
 
 </html>
