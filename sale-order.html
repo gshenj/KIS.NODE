@@ -117,8 +117,36 @@
 
 <!--/**container __new__*****************************************************/-->
 <div id="__new__" class="container">
-    <div style="text-align:center; margin:10pt auto 0pt;">
-        <table class="bill_table" style="width:100%; text-align:left;">
+    <div style="text-align:left; margin:10pt auto 0pt;">
+
+        <div>
+        <span style="float:left;  ">
+            <label for="customer_name">客户名称：</label>
+            <select id="customer_name" style="width:280px; ">
+                <option></option>
+            </select>
+        </span>
+        <span style="float:right;">
+            <label for="sale_date">送货日期：</label>
+                    <input id="sale_date" type="text"/></span>
+        </div>
+        <div style="clear:both; height:10pt;"></div>
+        <div style="">
+        <span style="float:left; margin-right:30pt;">
+              <label for="customer_address">送货地址：</label>
+                    <input style="width:300px;" id="customer_address"/>
+        </span>
+        <span style="float:left; margin-right:30pt;">
+            <label for="customer_principal">联系人：</label>
+                    <input id="customer_principal"/>
+        </span>
+        <span style="float:right;">
+              <label for="customer_phone">客户电话：</label>
+                    <input id="customer_phone"/>
+        </span>
+        </div>
+        <div style="clear:both; height:10pt;"></div>
+        <!--<table class="bill_table" style="width:100%; text-align:left;">
             <tr>
                 <td colspan="3" style="padding-right:70px;">
                     <label for="customer_name">客户名称：</label>
@@ -148,7 +176,7 @@
                     <input id="customer_phone"/>
                 </td>
             </tr>
-        </table>
+        </table>-->
     </div>
 
     <table class="bill_product_table" style="width:100%;">

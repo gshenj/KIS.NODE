@@ -253,6 +253,10 @@ function reset_modal_items() {
     $('.product_memo').val('');
 }
 
+function reset_total_sum() {
+    $('#product_total_sum').html('');
+}
+
 function change_modal(src) {
     var _modal_id = $(src).val();
     var _idx = $(src).parent().parent().attr('idx');  // tr attr 'idx'
@@ -487,6 +491,7 @@ var callbackOnCustomersOfNewOrder = function () {
     $('.product_modal').html('<option class="opt" value="0">&nbsp;</option>');
     $('.product_modal').select2({width: '100%'});
     reset_modal_items();
+    reset_total_sum();
 
     $('#customer_name').on('change',
         function () {
