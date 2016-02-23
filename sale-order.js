@@ -37,8 +37,13 @@ var hide_overlay = function (arg) {
     $("#__m").modal("hide");
     if (arg.type == 'create') {
         if (arg.printed) {
+
+            //todo  清空填
+            setOrderForm(true);
+
             // jump to list
             $('.m_a[data-target="__list__"]').click();
+
         }
     } else if (arg.type == 'select') {
 
@@ -67,7 +72,9 @@ $(function () {
         $(this).parent().addClass("active")
 
         if (target == '__list__') {
-            listOrders(10, 0)
+            listOrders(15, 0)
+        } else if (target=='__sys__') {
+
         }
     })
 })
@@ -235,7 +242,7 @@ function print_order() {
 function initSaleDate() {
 
     $("#sale_date").datepicker(datepicker_options);
-    $("#sale_date").datepicker("setDate", new Date());
+    $("#sale_date").datepicker("setDate",new Date());
     $("#sale_date_begin").datepicker(datepicker_options);
     $("#sale_date_end").datepicker(datepicker_options);
 
@@ -415,26 +422,62 @@ function showModalText(modals) {
     return r;
 }
 
+
+
+
 $(function () {
-    //$('#customer_name').html();
-    $('#customer_name').select2();
 
-    for (var i = 2; i <= 5; i++) {
-        var tr = $('tr[idx="1"]').clone();
-        $(tr).attr("idx", i);
-        $(tr).insertBefore($('#total_sum_tr'));
 
+    setOrderForm(false);
+});
+
+
+function setOrderForm (reset){
+
+    if (reset) {
+        $('.product_modal').select2('destroy');
+        $('tr.modal_tr').remove();
     }
 
-    $('.product_modal').html('<option class="opt" value="0">&nbsp;</option>');
-    $('.product_modal').select2({width: '100%'});
+
+    $('#customer_address').val('');
+    $('#customer_principal').val('');
+    $('#customer_phone').val('');
+    $('#product_total_sum').html('');
+
+
     initSaleDate();
+
+    $('#customer_name').select2()
+
+
+    var modal_td_str = '<td><select class="product_modal"></select></td>'+
+        '<td><input type="text" class="product_category"/></td>'+
+        '<td><input type="text" class="product_units"/></td>'+
+        '<td><input type="text" class="product_num"/></td>'+
+        '<td><input type="text" class="product_unit_price"/></td>'+
+        '<td><input type="text" class="product_sum"/></td>'+
+        '<td><input type="text" class="product_memo"/></td>';
+
+    for (var i = 1; i <= 5; i++) {
+        $('<tr class="modal_tr" idx="'+ i +'">'+modal_td_str+'</tr>').insertBefore($('#total_sum_tr'));
+    }
+    //
+    $('.product_modal').html('<option class="opt" value="0">&nbsp;</option>');
+    //
+    $('.product_modal').select2({width: '100%'});
+    //
+    //$('.product_modal').on('change', function(){change_modal(this)});
+
     $('.product_num').on('change', function () {
         changeNumOrUnitPrice(this);
     })
     $('.product_unit_price').on('change', function () {
         changeNumOrUnitPrice(this);
     })
+
+    // 清空数组
+    customerData.length=0;
 
     pgquery({
         sql: getCustomers, params: [], doResult: function (result) {
@@ -463,12 +506,108 @@ $(function () {
                 }
             }
 
-            $('#customer_name').select2('destroy');
-            $('#customer_name').select2({
-                data: customerData,
-                //allowClear: true,
-                placeholder: "请选择公司"
-            })
+
+            // 清空原有内容
+                $('#customer_name').html('');
+                $('#customer_name').select2({
+                    data: customerData,
+                    // allowClear: true,
+                    placeholder: "请选择公司"
+                })
+                $('#customer_name').select2('val', null)
+
+
+            var changeCustomerDeal =   function () {
+                console.log('Change_customerName');
+                var _id = $('#customer_name').val();
+                if (_id==''||_id==null) {
+                    $('#customer_address').val('');
+                    $('#customer_phone').val('');
+                    $('#customer_principal').val('');
+
+                } else {
+
+                    $('#customer_address').val(customerInfo['"' + _id + '"'].address);
+                    $('#customer_phone').val(customerInfo['"' + _id + '"'].phone);
+                    $('#customer_principal').val(customerInfo['"' + _id + '"'].principal);
+                }
+                // get product_modals
+                var ccid = $('#customer_name').val()
+                modals = new Array();
+                pgquery({
+                    sql: getProductModals, params: [ccid], doResult: function (res) {
+
+                        if (res.rows.length > 0) {
+                            // alert(result.rows.length)
+                            for (var i = 0; i < res.rows.length; i++) {
+                                var category_id = res.rows[i].category_id;
+                                var category_name = res.rows[i].category_name;
+                                var modal_name = res.rows[i].modal_name;
+                                var modal_id = res.rows[i].modal_id;
+                                var units_id = res.rows[i].units_id;
+                                var units_name = res.rows[i].units_name;
+                                var suggest_unit_price = res.rows[i].suggest_unit_price;
+                                var found = false;
+
+                                var _option_modal = {
+                                    modal_name: modal_name,
+                                    modal_id: modal_id,
+                                    category_id: category_id,
+                                    category_name: category_name,
+                                    units_id: units_id,
+                                    units_name: units_name,
+                                    suggest_unit_price: suggest_unit_price
+                                };
+
+                                for (var j = 0; j < modals.length; j++) {
+                                    if (modals[j].category_id == category_id) {
+                                        modals[j].options.push(_option_modal)
+                                        found = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!found)
+                                    modals.push({
+                                        category_id: category_id,
+                                        category_name: category_name,
+                                        options: [_option_modal]
+                                    })
+                            }
+                        }
+
+                        var s = '<option class="opt" value="0">&nbsp;</option>';
+                        for (var k = 0; k < modals.length; k++) {
+                            s += '<optgroup label="' + modals[k].category_name + '">';
+                            var options = modals[k].options;
+                            for (var x = 0; x < options.length; x++) {
+                                s += '<option class="opt" units="' + options[x].units + '" value="' + options[x].modal_id + '">' + options[x].modal_name + '</option>'
+                            }
+                            s += '</optgroup>';
+                        }
+
+                        // $('.product_modal').select2('destroy');
+                        // $('.product_modal').off('change');
+                        $('.product_modal').html(s);
+                        clear_modal_items();
+                        $('.product_modal').select2({width: '100%'});
+                        if (!reset) {
+                            // change事件只绑定一次
+                            $('.product_modal').on('change', function () {
+                                change_modal(this)
+                            });
+                        }
+                    }
+                });
+            };
+
+
+            if (!reset) {
+                // change 事件只绑定一次
+                $('#customer_name').on('change', changeCustomerDeal);
+                console.log("Bind change event on #customer_name")
+            }
+
 
 ////////////////////////////////////////////////// for list.
             $('#customer_name_1').select2({
@@ -478,82 +617,10 @@ $(function () {
             })
 ////////////////////////////////////////////////// for list.
 
-            $('#customer_name').on('change',
-                function () {
-                    var _id = $('#customer_name').val();
-                    $('#customer_address').val(customerInfo['"' + _id + '"'].address);
-                    $('#customer_phone').val(customerInfo['"' + _id + '"'].phone);
-                    $('#customer_principal').val(customerInfo['"' + _id + '"'].principal);
-
-                    // get product_modals
-                    var ccid = $('#customer_name').val()
-                    modals = new Array();
-                    pgquery({
-                        sql: getProductModals, params: [ccid], doResult: function (res) {
-
-                            if (res.rows.length > 0) {
-                                // alert(result.rows.length)
-                                for (var i = 0; i < res.rows.length; i++) {
-                                    var category_id = res.rows[i].category_id;
-                                    var category_name = res.rows[i].category_name;
-                                    var modal_name = res.rows[i].modal_name;
-                                    var modal_id = res.rows[i].modal_id;
-                                    var units_id = res.rows[i].units_id;
-                                    var units_name = res.rows[i].units_name;
-                                    var suggest_unit_price = res.rows[i].suggest_unit_price;
-                                    var found = false;
-
-                                    var _option_modal = {
-                                        modal_name: modal_name,
-                                        modal_id: modal_id,
-                                        category_id: category_id,
-                                        category_name: category_name,
-                                        units_id: units_id,
-                                        units_name: units_name,
-                                        suggest_unit_price: suggest_unit_price
-                                    };
-
-                                    for (var j = 0; j < modals.length; j++) {
-                                        if (modals[j].category_id == category_id) {
-                                            modals[j].options.push(_option_modal)
-                                            found = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (!found)
-                                        modals.push({
-                                            category_id: category_id,
-                                            category_name: category_name,
-                                            options: [_option_modal]
-                                        })
-                                }
-                            }
-
-                            var s = '<option class="opt" value="0">&nbsp;</option>';
-                            for (var k = 0; k < modals.length; k++) {
-                                s += '<optgroup label="' + modals[k].category_name + '">';
-                                var options = modals[k].options;
-                                for (var x = 0; x < options.length; x++) {
-                                    s += '<option class="opt" units="' + options[x].units + '" value="' + options[x].modal_id + '">' + options[x].modal_name + '</option>'
-                                }
-                                s += '</optgroup>';
-                            }
-
-                            $('.product_modal').select2('destroy');
-                            $('.product_modal').html(s);
-                            clear_modal_items();
-                            $('.product_modal').select2({width: '100%'});
-                            $('.product_modal').on('change', function () {
-                                change_modal(this);
-                            });
-                        }
-                    });
-                });
         }
     });
+}
 
 
-});
 
 

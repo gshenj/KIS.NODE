@@ -25,7 +25,7 @@ app.on('ready', function() {
   // Create the browser window.
   mainWindow = new BrowserWindow({width: 1000,
    height: 600
-  ,'auto-hide-menu-bar': true
+  ,'auto-hide-menu-bar': false//true
   });
 
   // and load the index.html of the app.

@@ -71,17 +71,17 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand">苏州元斌塑胶科技有限公司KIS</a>
+            <a class="navbar-brand"><span style="font-size:18pt; padding:4px 10px;">苏州元斌塑胶科技有限公司 KIS 系统</span></a>
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li class="active"><a href="#" class="m_a" data-target="__new__">新开出库单</a></li>
+                <li class="active"><a href="#" class="m_a" data-target="__new__"><span style="color:dodgerblue; font-size:14pt; padding:4px 10px">新开出库单</span></a></li>
                 <!--<li><a href="sale-order-list.html">出货单列表</a></li>  &lt;!&ndash;javascript:findByOrderNumber(100052)&ndash;&gt;-->
-                <li><a href="#" class="m_a" data-target="__list__">出货单列表</a></li>
+                <li><a href="#" class="m_a" data-target="__list__"><span style="color:dodgerblue; font-size:14pt; padding:4px 10px">出货单列表</span></a></li>
                 <!--javascript:findByOrderNumber(100052)-->
-                <li><a href="#)" class="m_a" data-target="__sys__">系统管理</a></li>
+                <li><a href="#)" class="m_a" data-target="__sys__"><span style="color:dodgerblue; font-size:14pt; padding:4px 10px">系统管理</span></a></li>
                 <!-- <li class="dropdown ">
                     <a href="#" class="dropdown-toggle " data-toggle="dropdown" role="button" aria-haspopup="true"
                        aria-expanded="false">系统管理<span class="caret"></span></a>
@@ -161,7 +161,7 @@
             <th width="13%">金额</th>
             <th width="20%">备注</th>
         </tr>
-        <tr idx="1">
+       <!-- <tr idx="1">
             <td><select class="product_modal"></select></td>
             <td><input type="text" class="product_category"/></td>
             <td><input type="text" class="product_units"/></td>
@@ -170,7 +170,7 @@
             <td><input type="text" class="product_sum"/></td>
             <td><input type="text" class="product_memo"/></td>
         </tr>
-
+-->
         <tr id="total_sum_tr">
             <td colspan="7" style="text-align: right;font-weight: bold;">合计金额：
                 <span id="product_total_sum" style="margin-right: 20%;"></span>
@@ -178,10 +178,11 @@
         </tr>
     </table>
     <div style="text-align:center; margin-top:40px;">
-        <button class="btn btn-default btn-primary" type="submit" onclick="document.location.reload()"> 重 填</button>
+        <button class="btn btn-default btn-primary" type="button" onclick="setOrderForm(true)"> 重 填</button>
+        <!--<button class="btn btn-default btn-primary" type="submit" onclick="document.location.reload()"> 重 填</button>-->
+        <!--<button class="btn btn-default btn-primary"  onclick="alert(1);document.getElementById('order_form').reset();"> 重 填</button>-->
         <button class="btn btn-default btn-primary" style="margin-left:150px;" onclick="print_order()"> 打 印</button>
     </div>
-
 </div>
 
 <!--/**container __list__****************************************************/-->
