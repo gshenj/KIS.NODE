@@ -1,16 +1,13 @@
 {
-  "name": "元斌塑胶科技KIS",
+  "name": "Yuan Bin Su Jiao Ke Ji KIS System",
   "description": "KIS With Electron app",
-
   "version": "1.0.0",
   "author": "gshenj <gshenj@gmail.com>",
   "main": "index.js",
   "bugs": {
     "url": "https://github.com/gshenj/KIS.NODE/issues"
   },
-  "devDependencies": {
-    "electron-prebuilt": "^0.34.0"
-  },
+  "devDependencies": {},
   "homepage": "https://github.com/gshenj/KIS.NODE",
   "keywords": [
     "atom-shell",
@@ -27,5 +24,8 @@
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "nedb": "^1.8.0"
   }
 }

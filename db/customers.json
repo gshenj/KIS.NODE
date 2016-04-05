@@ -1,0 +1,32 @@
+/**
+ * Created by jin on 2016/2/26 0026.
+ */
+db.customers.insert([{
+  name:"丹阳市坤华汽车配件有限公司",
+  simple_code:"KH",
+  city:"丹阳",
+  principal:'陈玉坤',
+  phone:'12345678',
+  address:'丹阳市界牌镇。。。。',
+  kaipiaoziliao:''
+  customer_id:''
+},{
+  name:"苏州迅盛塑胶电器有限公司",
+  simple_code:"XS",
+  city:"苏州",
+  principal:'徐松柏',
+  phone:'1370788727',
+  address:'苏州望亭新华路12号',
+  kaipiaoziliao:''
+  customer_id:''
+},
+  {
+    name:"丹阳市汉江微型汽车配件厂",
+    simple_code:"HJ",
+    city:"丹阳",
+    principal:'陈玉坤',
+    phone:'12345678',
+    address:'丹阳市界牌镇。。。。',
+    kaipiaoziliao:''
+    customer_id:''
+  }])

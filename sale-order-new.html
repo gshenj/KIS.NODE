@@ -21,15 +21,24 @@
     <script src="scripts/accounting.min.js"></script>
     <script src="scripts/bootstrap/js/bootstrap.js"></script>
     <script src="scripts/dateformat.js"></script>
+    <script src="scripts/dbutils.js"></script>
+    <script src="scripts/jquery.colorbox-min.js"></script>
+    <script src="scripts/jquery.ztree.all.js"></script>
+    <script src="scripts/datatable/js/jquery.dataTables.js"></script>
 
+    <script src="sys_manage.js"></script>
     <script src="sale-order.js"></script>
 
     <!-- Le styles -->
     <!-- Bootstrap -->
     <link href="scripts/jquery-ui/jquery-ui.css" rel="stylesheet">
     <link href="styles/select2.min.css" rel="stylesheet">
+    <link href="styles/zTreeStyle/zTreeStyle.css" rel="stylesheet">
     <link href="scripts/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="scripts/datatable/css/jquery.dataTables.css" rel="stylesheet">
     <link href="data:text/css;charset=utf-8," data-href="scripts/bootstrap/css/bootstrap-theme.css" rel="stylesheet">
+    <link href="scripts/colorbox/colorbox.css" rel="stylesheet">
+
     <link href="styles/main.css" rel="stylesheet">
     <style>
         body {
@@ -45,6 +54,12 @@
 
         }
 
+        /* 根节点冻结  */
+        .ztree li span.button.switch.level0 {visibility:hidden; width:1px;}
+        .ztree li ul.level0 {padding:0; background:none;}
+
+
+        .product_name, .product_modal{font-size:14px; }
     </style>
 
     <!-- Fav and touch icons -->
@@ -81,7 +96,7 @@
                 <!--<li><a href="sale-order-list.html">出货单列表</a></li>  &lt;!&ndash;javascript:findByOrderNumber(100052)&ndash;&gt;-->
                 <li><a href="#" class="m_a" data-target="__list__"><span style="color:dodgerblue; font-size:14pt; padding:4px 10px">出货单列表</span></a></li>
                 <!--javascript:findByOrderNumber(100052)-->
-                <li><a href="#)" class="m_a" data-target="__sys__"><span style="color:dodgerblue; font-size:14pt; padding:4px 10px">系统管理</span></a></li>
+                <li><a href="#" class="m_a" data-target="__sys__"><span style="color:dodgerblue; font-size:14pt; padding:4px 10px">系统管理</span></a></li>
                 <!-- <li class="dropdown ">
                     <a href="#" class="dropdown-toggle " data-toggle="dropdown" role="button" aria-haspopup="true"
                        aria-expanded="false">系统管理<span class="caret"></span></a>
@@ -92,7 +107,11 @@
                         <li><a href="#">One more separated link</a></li>
                     </ul>-->
                 </li>
+
             </ul>
+
+
+
             <ul class="nav navbar-nav navbar-right">
 
                 <li class="dropdown">
@@ -122,9 +141,8 @@
             <tr>
                 <td colspan="3" style="padding-right:70px;">
                     <label for="customer_name">客户名称：</label>
-                    <select id="customer_name" style="width:280px; ">
-                        <option></option>
-                    </select>
+                    <input type="text" id="customer_name" style="width:350px;" readonly="true"/>
+                    <input type="hidden" id="customer_id"/>
                 </td>
                 <td colspan="2">
                     &nbsp;
@@ -153,24 +171,60 @@
 
     <table class="bill_product_table" style="width:100%;">
         <tr>
-            <th width="20%">规格型号</th>
-            <th width="18%">货物名称</th>
+            <th width="20%">货物名称</th>
+            <th width="18%">规格型号</th>
             <th width="10%">单位</th>
             <th width="10%">数量</th>
             <th width="9%">价格</th>
             <th width="13%">金额</th>
             <th width="20%">备注</th>
         </tr>
-       <!-- <tr idx="1">
-            <td><select class="product_modal"></select></td>
-            <td><input type="text" class="product_category"/></td>
-            <td><input type="text" class="product_units"/></td>
+       <tr idx="1">
+            <td><select class="product_name"><option></option></select></td>
+            <td><select class="product_modal"><option></option></select></td>
+            <td><input type="text" class="product_units" readonly="readonly"/></td>
             <td><input type="text" class="product_num"/></td>
             <td><input type="text" class="product_unit_price"/></td>
-            <td><input type="text" class="product_sum"/></td>
+            <td><input type="text" class="product_sum" readonly="readonly"/></td>
             <td><input type="text" class="product_memo"/></td>
         </tr>
--->
+        <tr idx="2">
+            <td><select class="product_name"><option></option></select></td>
+            <td><select class="product_modal"><option></option></select></td>
+            <td><input type="text" class="product_units" readonly="readonly"/></td>
+            <td><input type="text" class="product_num"/></td>
+            <td><input type="text" class="product_unit_price"/></td>
+            <td><input type="text" class="product_sum" readonly="readonly"/></td>
+            <td><input type="text" class="product_memo"/></td>
+        </tr>
+        <tr idx="3">
+            <td><select class="product_name"><option></option></select></td>
+            <td><select class="product_modal"><option></option></select></td>
+            <td><input type="text" class="product_units" readonly="readonly"/></td>
+            <td><input type="text" class="product_num"/></td>
+            <td><input type="text" class="product_unit_price"/></td>
+            <td><input type="text" class="product_sum" readonly="readonly"/></td>
+            <td><input type="text" class="product_memo"/></td>
+        </tr>
+        <tr idx="4">
+            <td><select class="product_name"><option></option></select></td>
+            <td><select class="product_modal"><option></option></select></td>
+            <td><input type="text" class="product_units" readonly="readonly"/></td>
+            <td><input type="text" class="product_num"/></td>
+            <td><input type="text" class="product_unit_price"/></td>
+            <td><input type="text" class="product_sum" readonly="readonly"/></td>
+            <td><input type="text" class="product_memo"/></td>
+        </tr>
+        <tr idx="5">
+            <td><select class="product_name"><option></option></select></td>
+            <td><select class="product_modal"><option></option></select></td>
+            <td><input type="text" class="product_units" readonly="readonly"/></td>
+            <td><input type="text" class="product_num"/></td>
+            <td><input type="text" class="product_unit_price"/></td>
+            <td><input type="text" class="product_sum" readonly="readonly"/></td>
+            <td><input type="text" class="product_memo"/></td>
+        </tr>
+
         <tr id="total_sum_tr">
             <td colspan="7" style="text-align: right;font-weight: bold;">合计金额：
                 <span id="product_total_sum" style="margin-right: 20%;"></span>
@@ -224,19 +278,69 @@
 </div>
 
 <!--/**container __sys__****************************************************/-->
-<div id="__sys__" class="container" style="display:none;">
-    <table id="sys_table" class="table table-condensed table-hover table-bordered">
-        <tr>
-            <th>订单编号</th>
-            <th>送货日期</th>
-            <th>客户名称</th>
-            <th>内容</th>
-            <th>制单人</th>
-            <th>录入时间</th>
-            <th>操作</th>
-        </tr>
+<div id="__sys__" class="container" style="display:none; text-align:center; width:100%;">
 
-    </table>
+    <div style="margin:40px auto;">
+        <button type="button" class="btn btn-primary btn-lg" onclick="gotoRegionManage()">归属地管理</button>
+        <button type="button" class="btn btn-success btn-lg" onclick="gotoCustomerManage()" style="margin-left:40px;">客户管理</button>
+        <button type="button" class="btn btn-info btn-lg" onclick="gotoUserManage()" style="margin-left:40px;">用户管理</button>
+    </div>
+
+ <!--   <div id='sys_manage' style="padding:10px; background:#fff;  height:100%;">
+
+        <div style="float:left; width:15%; background-color:#eee; height:100%" id="region_opt_div">
+            <div style="height:30px;line-height:30px; font-size:20px; text-align:center; background-color:#8fbcd4;"  onclick="cancelSelect()">归属地区</div>
+            <table style="text-align:center; width:100%;">
+               <tr><td><a href="javascript:addRegion()">增加</a></td>
+                <td><a href="javascript:editRegion()">编辑</a></td>
+                <td><a href="javascript:deleteRegion()">删除</a></td>
+                <td><a href="javascript:cancelSelect()">不选</a></td></tr>
+            </table>
+            <ul id="region_opt_tree" class="ztree"></ul>
+        </div>
+        <div style="float:left; width:65%; height:100%; padding:0 10px; border:0px solid red;">
+
+                <div style="" >
+                    <table id="customer_opt_table" class="display" cellspacing="0" width="100%">
+                    </table>
+                </div>
+        </div>
+        <div id="customer_info_opt_div" style="float:left; text-align:left; width:20%; height:100%; border:1px solid #AAAAAA; padding:20px 5px">
+            <div style="margin-top:0px;">名称：</div>
+            <div><input type="text" name="c_name" style="width:100%;" /><input type="hidden" name="id" /></div>
+            <div style="margin-top:10px;">简码：</div>
+            <div><input type="text" name="c_simple_code"  style="width:100%;" /></div>
+            <div style="margin-top:10px;">电话：</div>
+            <div><input type="text" name="c_phone" style="width:100%;"/></div>
+            <div style="margin-top:10px;">负责人：</div>
+            <div><input type="text" name="c_principal" style="width:100%;"/></div>
+            <div style="margin-top:10px;">地址：</div>
+            <div><input type="text" name="c_address" style="width:100%;"/></div>
+            <div style="margin-top:10px;">产品：
+                <a href="javascript:addProduct()">添加</a><a href="javascript:editProduct()">编辑</a><a href="javascript:deleteProduct()">删除</a></div>
+            <div><select name="c_products" style="width:100%;"></select></div>
+            <div style="margin-top:10px;">型号：
+                <a href="javascript:addModal()">添加</a><a href="javascript:editModal()">编辑</a><a href="javascript:deleteModal()">删除</a></div>
+            <div><select name="c_modals" style="width:100%;"></select></div>
+
+            <div style=" margin:30px 0; text-align:center;"><button>保存</button><button>添加</button><button>删除</button></div>
+        </div>
+    </div>
+
+    <div style="display:none;">
+        <div id="region_input" style="width:350px; text-align:center;">
+            <div id="region_tip"></div>
+            <div style="margin:20px auto">
+                <div style="margin:20px 0px;">地区名字： <input id="region_name_input" type="text" style="width:200px;" /></div>
+                <div style="margin:20px 0px;">地区编码： <input id="region_pcode_input" type="text" style="width:200px;" /></div>
+                <div style="margin:30px 0px 30px;"><button style="padding:4px 20px;" onclick="doneOptRegion()">确定</button></div>
+            </div>
+        </div>
+    </div>
+
+-->
+
+
 
 </div>
 
@@ -251,7 +355,6 @@
                 <h4 class="modal-title" id="myModalLabel">登出</h4>
             </div>
             <div class="modal-body">
-
                 <br>
                 <br>
                 确定要登出？
@@ -266,6 +369,30 @@
     </div>
 </div>
 <div id="__m"></div>
+
+<!-- This contains the hidden content for inline calls -->
+<div style='display:none'>
+    <div id='customer_choosen' style="padding:10px; background:#fff; height:100%;">
+
+        <div style="float:left; width:15%; background-color:#eee; height:100%" id="regions_menu_div">
+           <!-- <div style="height:30px;line-height:30px; font-size:20px; text-align:center; background-color:#8fbcd4;">归属地区</div>-->
+            <ul id="region_tree" class="ztree"></ul>
+        </div>
+        <DIV style="float:left; width:83%; padding:0 10px; border:0px solid blue; ">
+            <div style="" >
+                <table id="customer_table" class="display" cellspacing="0" width="100%">
+                </table>
+            </div>
+        </DIV>
+    </div>
+</div>
+
+
+
+<div id="main_layout" style="display:none; ">
+
+</div>
+
 
 
 </body>

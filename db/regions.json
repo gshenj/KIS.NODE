@@ -1,0 +1,7 @@
+/**
+ * Created by jin on 2016/2/26 0026.
+ */
+db.cities.insert([
+  {id:'1', name:"江苏", cities:[{id:'1', name:'苏州'},{id:'2',name:'常州'},{id:'3',name:'丹阳'},{id:'4',name:'南京'}]},
+  {id:'', name:"河南", cities:[{id:'',name:'开封'}]}
+])

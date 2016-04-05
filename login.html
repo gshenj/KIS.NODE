@@ -11,6 +11,7 @@
   <!-- Le styles -->
   <script type="text/javascript">
     jQuery = require('jquery')
+    $ = jQuery;
     console.log(jQuery.fn.jquery)
   </script>
   <script src="scripts/pgquery.js"></script>
@@ -19,13 +20,14 @@
   <!--<script src="jq.js"></script>-->
   <!--<script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>-->
   <script src="scripts/bootstrap/js/bootstrap.js"></script>
+  <script src="scripts/jquery.colorbox-min.js"></script>
 
   <!-- Le styles -->
   <!-- Bootstrap -->
   <link href="scripts/bootstrap/css/bootstrap.css" rel="stylesheet">
   <style type="text/css">
     body {
-      padding-top: 40px;
+      padding-top: 60px;
       padding-bottom: 40px;
       background-color: #eee;
     }
@@ -159,6 +161,31 @@
     }
     
     getCookieName();
+
+
+      function colorbox() {
+          $("#username").colorbox({inline:true, width:"50%", href:'#inline_content'});
+      }
+
+      $(function() {
+//          $("#username").colorbox({inline:true, width:"50%", href:'#inline_content',closeButton:false});
+         // $('#username').on('focus', function(){$('#username').trigger('click')})
+
+
+          $("#username").keyup(function(){
+              if(event.keyCode == 13){
+                  $('#username').trigger('click')
+              }
+          });
+          $("#btnsubmit").keyup(function(){
+              if(event.keyCode == 13){
+                  $('#btnsubmit').trigger('click')
+              }
+          });
+
+      })
+
+
   </script>
 </head>
 
@@ -166,10 +193,10 @@
 
   <div class="container">
 
-    <form class="form-signin" onsubmit="return false;">
-      <h2 class="form-signin-heading">欢迎登录</h2>
+    <form class="form-signin" onsubmit="return false;" onkeydown="if(event.keyCode==13)return false;">
+      <h1 class="form-signin-heading">欢迎登录</h1>
       <label for="username" class="sr-only">账户</label>
-      <input type="text" class="form-control" id="username" placeholder="账户" required autofocus>
+      <input type="text" class="form-control" id="username" placeholder="账户" required autofocus >
       <label for="password" class="sr-only">密码</label>
       <input type="password" class="form-control" id="password" value="1234" placeholder="密码" required>
       <div class="checkbox">
@@ -177,12 +204,11 @@
           <input type="checkbox" id="remember-me" value="remember-me"> 记住账户
         </label>
       </div>
-      <button class="btn btn-lg btn-primary btn-block" type="submit" onclick="login()">登 录</button>
+      <button class="btn btn-lg btn-primary btn-block" id="btnsubmit" type="submit" onclick="login()">登 录</button>
     </form>
 
   </div>
   <!-- /container -->
-
 </body>
 
 </html>

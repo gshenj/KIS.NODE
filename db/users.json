@@ -1,0 +1,16 @@
+/**
+ * Created by jin on 2016/2/26 0026.
+ */
+db.users.insert(
+[
+{
+  name:"沈锦",
+  passwd:'1234',
+  role:'admin'
+},
+{
+name:"茅惠林",
+passwd:'1234',
+role:'general_manager'
+}]
+)

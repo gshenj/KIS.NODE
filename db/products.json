@@ -1,0 +1,9 @@
+/**
+ * Created by jin on 2016/2/26 0026.
+ */
+[{
+  name:'聚丙烯', modals:[{name:'1A料-黑', unit:'千克',suggest_unit_price:7.2}  ]
+},
+  {
+    name:'聚氨酯', modals:[{name:'TPU-黑', unit:'千克',suggest_unit_price:15}  ]
+  }]

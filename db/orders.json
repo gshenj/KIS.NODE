@@ -1,0 +1,15 @@
+/**
+ * Created by jin on 2016/2/26 0026.
+ */
+{
+  customer:{},
+  sale_date:"2014-11-20",
+  create_user:{name:'', id:''},
+  products:[
+    {name:'聚丙烯', modal:'1A料-黑', unit:'千克', num:10000, unit_price:7.2, sum:72000, memo:'400包*25kg'},
+    {name:'聚丙烯', modal:'2A料-黑', unit:'千克', num:10000, unit_price:6.3, sum:63000, memo:'400包*25kg'}
+  ],
+  total_sum:200000
+
+
+}

@@ -1,5 +1,6 @@
 .container {
     width: 100%;
+    height:100%;
 }
 
 
@@ -67,7 +68,8 @@ input {
 
 }
 
-.bill_product_table input {
+.bill_product_table input, .bill_product_table select,
+#customer_info_opt_div input, #customer_info_opt_div select{
     width: 100%;
     background-color: #fafafa;
     height: 30px;
@@ -75,10 +77,33 @@ input {
     border: 1px solid steelblue;
 }
 
+#customer_info_opt_div a {
+    margin-left:10px;
+
+}
+
 .select2-container--default .select2-selection--single {
     background-color: #fff;
     border: 1px solid steelblue;
     border-radius: 0px;
     height: 30px;
-
 }
+
+
+.datatable_search{
+    float:left;
+    margin-left:20px;
+}
+
+.datatable_toolbar {
+    float: right;
+    margin-right:30px;
+}
+
+.box_label {
+    margin-top:10px;font-size:14px;
+}
+.box_input {
+    width:100%; height:35px; line-height:35px;
+}
+

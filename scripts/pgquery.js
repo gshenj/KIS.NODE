@@ -45,3 +45,18 @@ var countAllSaleOrder = "select count(*) as cnt from sale_order_json";
 
 
 var findSaleOrder = "select customer.name, customer.id, sale_order.order_number, sale_order.data from customer, sale_order_json sale_order where sale_order.customer_id = customer.id and order_number = $1";
+
+
+var findRegions = "select region from regions order by region->>'pcode';"
+
+var findCustomersByRegion = "select id, region,customer_info from customers where region >= $1 and region <= $2";
+var sql_find_customer_by_id = "select name, region, customer_info from customers where id = $1"
+var findProductsByCustomer = "select name, modals from products where customer = $1 order by name asc";
+var sql_add_product = "insert into products(customer, name, modals) values($1, $2, $3)";
+var sql_delete_product = "delete from products where customer=$1 and name=$2"
+var sql_update_product = "update products set name = $1 where customer=$2 and name=$3"
+var sql_update_modals = "update products set modals = $1 where customer=$2 and name=$3"
+
+var sql_add_region = "insert into regions(region) values($1)";
+var sql_update_region = "update regions set region = $1 where (region ->>'name') = $2"
+var sql_delete_region = "delete from regions where region->>'name'= $1"

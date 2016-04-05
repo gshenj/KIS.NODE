@@ -23,9 +23,9 @@ var session = {};
 // initialization and is ready to create browser windows.
 app.on('ready', function() {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 1000,
-   height: 600
-  ,'auto-hide-menu-bar': false//true
+  mainWindow = new BrowserWindow({width: 1280,
+   height: 700
+  ,'auto-hide-menu-bar': true//true
   });
 
   // and load the index.html of the app.
@@ -54,8 +54,8 @@ var ipc = require('ipc');
 var win = null;
 //这个方法创建窗口，没用
 ipc.on('show_print_win', function(event, arg) {
-    win = new BrowserWindow({width: 800,
-        height: 600
+    win = new BrowserWindow({width: 1000,
+        height: 700
         ,'auto-hide-menu-bar': true,
         alwaysOnTop :true
     });
@@ -125,35 +125,10 @@ ipc.on('session', function(event, arg) {  // arg->{opt:'', key:'', value:''}
 //  93         } catch (e) {
 //  94             bln = false;
 //  95         }
- 96       
+// 96
         event.returnValue = bln;
      } else if (opt == 'clear') {
        session = {};
        event.returnValue = 'true';
      }
  });
- 
- 
-//  ipc.on('cookie', function(err, arg){
-//      var opt = arg.opt;
-//      var cookies = mainWindow.weContents.session.cookies
-//      if (opt == 'get') {
-//          cookies.get(arg.cookie, function(error, cookies) {
-//          if (error) throw error;
-//             console.log(cookies);
-//          });
-         
-//       } else if (opt == 'set') {
-//          cookies.set(arg.cookie, function(error, cookies) {
-//          if (error) throw error;
-//             console.log(cookies);
-//          });
-         
-//       } else if (opt=='remove') {
-//          cookies.remove(arg.cookie, function(error, cookies) {
-//          if (error) throw error;
-//             console.log(cookies);
-//          });
-//       }
-//   })
- 

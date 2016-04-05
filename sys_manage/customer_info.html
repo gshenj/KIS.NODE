@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+<head>
+    <meta charset="UTF-8">
+    <title>客户信息</title>
+
+    <script>
+        jQuery = require('jquery')
+        $ = jQuery;
+    </script>
+
+    <script src="../scripts/pgquery.js"></script>
+
+    <script src="../scripts/bootstrap/js/bootstrap.js"></script>
+    <script src="../scripts/jquery.ztree.all.js"></script>
+    <script src="../scripts/jquery.colorbox-min.js"></script>
+    <script src="../scripts/datatable/js/jquery.dataTables.js"></script>
+
+
+    <link href="../scripts/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="data:text/css;charset=utf-8," data-href="../scripts/bootstrap/css/bootstrap-theme.css" rel="stylesheet">
+    <link href="../styles/zTreeStyle/zTreeStyle.css" rel="stylesheet">
+    <link href="../scripts/datatable/css/jquery.dataTables.css" rel="stylesheet">
+    <link href="../scripts/colorbox/colorbox.css" rel="stylesheet">
+    <link href="../styles/main.css" rel="stylesheet">
+
+
+    <style>
+        #btn_add, #btn_update, #btn_delete {
+            display: none;
+        }
+    </style>
+
+
+</head>
+<body style="text-align:center;">
+
+<div id="customer_input" style="width:400px;margin:20px auto; padding:0px 0px; text-align:left;">
+
+
+    <div style="margin-top:40px;">
+        <h1>江苏坤华</h1>
+    </div>
+
+    <div style="border:1px solid #ccc; background-color:#eee; padding:20px 20px;">
+        <div class="box_label" style="margin-top:0px;"><strong>名称：</strong></div>
+        <div><input type="text" id="c_name" class="box_input"/><input type="hidden" id="c_id"/></div>
+        <div class="box_label"><strong>简码：</strong></div>
+        <div><input type="text" id="c_simple_code" class="box_input"/></div>
+        <div class="box_label"><strong>电话：</strong></div>
+        <div><input type="text" id="c_phone" class="box_input"/></div>
+        <div class="box_label"><strong>负责人：</strong></div>
+        <div><input type="text" id="c_principal" class="box_input"/></div>
+        <div class="box_label"><strong>地址：</strong></div>
+        <div><input type="text" id="c_address" class="box_input"/></div>
+        <div class="box_label" style="text-align:right; margin-right:10px;">
+            <button id="btn_add" class="btn btn-primary" onclick="doneOptRegion()">确定新增</button>
+            <button id="btn_update" class="btn btn-success" onclick="doneOptRegion()">确定修改</button>
+            <button id="btn_delete" class="btn btn-danger" onclick="doneOptRegion()">确定删除</button>
+        </div>
+
+    </div>
+
+    <!--    <div style="float:left; width:280px;margin-left:4px; padding:0 20px 0 0">
+            <div style="margin-top:20px; color:#333333"><strong>产品：</strong></div>
+            <div><input type="text" name="c_name" style="width:100%; height:35px; line-height:35px;"/><input type="hidden" name="id"/></div>
+
+            <div style="margin-top:10px; color:#333333"><strong>型号：</strong></div>
+            <div><input type="text" name="c_simple_code" style="width:100%; height:35px; line-height:35px;"/></div>
+
+        </div>-->
+    <!--<div style="margin:0 auto; text-align:center;border:0px solid black;">
+        <div style="margin:20px auto 10px;">
+            <button id="btn_add" class="btn btn-primary" onclick="doneOptRegion()">确定新增</button>
+            <button id="btn_update" class="btn btn-success" onclick="doneOptRegion()">确定修改</button>
+            <button id="btn_delete" class="btn btn-danger" onclick="doneOptRegion()">确定删除</button>
+        </div>
+    </div>-->
+
+</div>
+
+<script>
+    function getUrlParam(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+        var r = window.location.search.substr(1).match(reg); //匹配目标参数
+        if (r != null) return unescape(r[2]);
+        return null; //返回参数值
+    }
+
+    var customer_id = getUrlParam('id');
+
+    //1:add,  2:delete,  3:modify
+    var opt_type = getUrlParam('type');
+
+    var customer = {id: customer_id}
+
+    if (opt_type == 1) {
+        $('#c_id').val('')
+        $('#c_name').val('');
+        $('#c_simple_code').val('');
+        $('#c_phone').val('');
+        $('#c_principal').val('');
+        $('#c_address').val('');
+        $('#btn_add').show();
+
+    } else {
+        pgquery({
+            sql: sql_find_customer_by_id, params: [customer_id], doResult: function (result) {
+                var rows = result.rows;
+                if (rows.length == 0) {
+                    alert('未找到客户数据！')
+                    return;
+                }
+
+                customer.name = rows[0].name;
+                customer.customerInfo = rows[0].customer_info;
+
+
+                $('#c_id').val(customer.id)
+                $('#c_name').val(customer.name);
+                $('#c_simple_code').val(customer.customerInfo.simple_code);
+                $('#c_phone').val(customer.customerInfo.phone);
+                $('#c_principal').val(customer.customerInfo.principal);
+                $('#c_address').val(customer.customerInfo.address);
+
+                if (opt_type == 2) {
+                    $('#c_id').attr('disabled', true)
+                    $('#c_name').attr('disabled', true)
+                    $('#c_simple_code').attr('disabled', true)
+                    $('#c_phone').attr('disabled', true)
+                    $('#c_principal').attr('disabled', true)
+                    $('#c_address').attr('disabled', true)
+                    $('#btn_delete').show();
+
+                } else if (opt_type == 3) {
+                    $('#btn_update').show();
+                }
+            }
+        });
+    }
+
+
+</script>
+</body>
+</html>

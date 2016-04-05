@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+<head>
+    <meta charset="UTF-8">
+    <title>客户信息</title>
+
+    <script>
+        jQuery = require('jquery')
+        $ = jQuery;
+    </script>
+
+    <script src="../scripts/pgquery.js"></script>
+
+    <script src="../scripts/bootstrap/js/bootstrap.js"></script>
+    <script src="../scripts/jquery.ztree.all.js"></script>
+    <script src="../scripts/jquery.colorbox-min.js"></script>
+    <script src="../scripts/datatable/js/jquery.dataTables.js"></script>
+
+
+    <link href="../scripts/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="data:text/css;charset=utf-8," data-href="../scripts/bootstrap/css/bootstrap-theme.css" rel="stylesheet">
+    <link href="../styles/zTreeStyle/zTreeStyle.css" rel="stylesheet">
+    <link href="../scripts/datatable/css/jquery.dataTables.css" rel="stylesheet">
+    <link href="../scripts/colorbox/colorbox.css" rel="stylesheet">
+    <link href="../styles/main.css" rel="stylesheet">
+
+
+
+
+</head>
+<body style="text-align:center;">
+
+    <div id="customer_input" style="width:622px;margin:20px auto; padding:0px 0px; text-align:left;">
+
+        <div style="margin-top:40px;">
+            <h1>江苏坤华</h1>
+        </div>
+       <div style="padding:20px 20px;border:1px solid #ccc; background-color:#eee">
+
+           <div style="float:left; width:280px;">
+            <div style="color:#333333;font-size:16px; font-weight:bold; border:0px solid red; float:left; width:160px;">产品列表：</div>
+               <div style="width:90px;font-size:16px; float:right;border:0px solid red; text-align:right; ">
+                   <a class="product_add_link" href="#product_opt">增加</a>
+                   <a class="product_modify_link" style="margin-left:10px;" href="#product_opt">管理</a></div>
+            <div style="clear:both;">
+                <select id="product_list" size="10" style="width:100%; /*height:300px;*/ font-size:20px; -webkit-appearance: none">
+                </select>
+            </div>
+           </div>
+
+           <div style="float:left; width:280px; margin-left:20px;">
+            <div style="color:#333333; font-size:16px; font-weight:bold; border:0px solid red; float:left; width:160px;">型号列表：</div>
+               <div style="width:90px;font-size:16px; float:right;border:0px solid red; text-align:right; ">
+                   <a class="modal_add_link" href="#modal_opt">增加</a>
+                   <a class="modal_modify_link" style="margin-left:10px;" href="#modal_opt">管理</a></div>
+               <div style="clear:both;">
+                   <select id="modal_list" size="10" style="width:100%; font-size:20px; -webkit-appearance: none">
+                   </select>
+               </div>
+           </div>
+
+           <div style="clear:both; height:1px"></div>
+        </div>
+        <!--<div style="margin:0 auto; text-align:center;border:0px solid black;">
+            <div style="margin:20px auto 10px;"><button class="btn btn-primary" onclick="doneOptRegion()">保存</button>
+            </div>
+        </div>-->
+
+    </div>
+
+
+    <div style="display:none;">
+
+        <div id="product_opt" style="text-align:center; padding:40px 20px;">
+            <div style="color:#333333;"><h3>产品</h3></div>
+                <div style="margin:0px auto; width:400px; text-align: left; border:1px solid #ccc; background-color:#eee; padding:20px 20px;">
+                    <div class="box_label" style="margin-top:0px;"><strong>名称：</strong><br/><input id="product_name" type="text" class="box_input" />
+                        <input id="product_name_old" type="hidden" /></div>
+                    <div class="box_label" style="text-align:right; margin-right:10px;">
+                        <button class="btn btn-primary" onclick="addProduct()">确定新增</button>
+                        <button class="btn btn-success" onclick="updateProduct()">确定修改</button>
+                        <button class="btn btn-danger" onclick="deleteProduct()">删除</button>
+                    </div>
+                </div>
+
+        </div>
+
+        <div id="modal_opt" style="text-align:center;padding:40px 20px;">
+               <div style="color:#333333"><h3>型号</h3></div>
+
+               <div style="margin:0px auto; width:400px; text-align: left; border:1px solid #ccc; background-color:#eee; padding:20px 20px;">
+                  <div class="box_label" style="margin-top:0px;"><strong>名称：</strong><br/><input id="modal_name" type="text" class="box_input" /><input id="modal_name_old" type="hidden" /></div>
+                  <div class="box_label" ><strong>单位：</strong><br/><input id="modal_units" type="text" class="box_input" /></div>
+                  <div class="box_label" ><strong>单价：</strong><br/><input id="modal_suggest_price" type="text"  class="box_input" /></div>
+                   <div class="box_label" >
+                       <button onclick="addModal()">确定新增</button>
+                       <button onclick="updateModal()">确定修改</button>
+                       <button onclick="deleteModal()">删除</button>
+                   </div>
+               </div>
+        </div>
+    </div>
+
+
+<script>
+
+    function getUrlParam(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+        var r = window.location.search.substr(1).match(reg); //匹配目标参数
+        if (r != null) return unescape(r[2]); return null; //返回参数值
+    }
+
+    var customer_id  = getUrlParam('id');
+    // [{"name":'pp', modals:[{"name":"1A",
+    var product_array = [];
+
+
+
+    function afterProductsLoad() {
+        $('#product_list').on('change', function(){
+            resetModalList();
+        })
+
+
+        $('.product_add_link').click(function(){
+            $('#product_name_old').val("");
+            $('#product_name').val("")
+            $('#product_opt h3').html('新增商品');
+            $.colorbox({inline: true, speed:0,  width: '500px', height: '400px', href: '#product_opt', title: '添加产品'})
+        })
+
+        $('.product_modify_link').click(function(){
+            var selected_product = $('#product_list').val();
+            console.log(selected_product)
+            if (selected_product == null) {
+                alert('请选择商品！')
+                return false;
+            }
+
+            $('#product_name_old').val(selected_product);
+            $('#product_name').val(selected_product);
+            $('#product_opt h3').html('管理商品');
+            $.colorbox({inline: true, speed:0,  width: '500px', height: '400px', href: '#product_opt', title: '管理商品'})
+        })
+
+
+        $('.modal_add_link').click(function(){
+            $('#modal_name_old').val("");
+            $('#modal_name').val("")
+            $('#modal_units').val("")
+            $('#modal_suggest_price').val("")
+            $('#modal_opt h3').html('新增型号');
+            $.colorbox({inline: true, speed:0,  width: '500px', height: '500px', href: '#modal_opt', title: '添加型号'})
+        })
+
+        $('.modal_modify_link').click(function(){
+            var selected_modal = $('#modal_list').val()
+            if (selected_modal == null) {
+                alert('请选择型号！')
+                return;
+            }
+
+            var selected_product = $('#product_list').val();
+
+            var modals = getProductModals(selected_product);
+            var modal = {}
+            for (var i in modals) {
+               if (modals[i].name == selected_modal) {
+                   modal = modals[i];
+                   break;
+               }
+            }
+
+
+            $('#modal_name_old').val(selected_modal);
+            $('#modal_name').val(selected_modal)
+            $('#modal_units').val(modal.units)
+            $('#modal_suggest_price').val(modal.suggest_price)
+            $('#modal_opt h3').html('管理型号');
+            $.colorbox({inline: true, speed:0, minWidth: '500px', height: '500px', href: '#modal_opt', title: '管理型号'})
+        })
+    }
+
+
+    function addProduct() {
+        var productName =  $('#product_name').val();
+        var modals = [];
+        pgquery({
+            sql: sql_add_product, params: [customer_id, productName, modals], doResult: function (result) {
+                console.log(JSON.stringify(result))
+                loadProductsData([resetProductListAndModalList])
+                $.colorbox.close();
+            }
+        });
+    }
+    function updateProduct() {
+        var productName =  $('#product_name').val();
+        var productNameOld = $('#product_name_old').val();
+        pgquery({
+            sql: sql_update_product, params: [productName,customer_id, productNameOld], doResult: function (result) {
+                console.log(JSON.stringify(result))
+                loadProductsData([resetProductListAndModalList])
+                $.colorbox.close();
+            }
+        });
+    }
+    function deleteProduct() {
+        var productName =  $('#product_name_old').val();
+        pgquery({
+            sql:sql_delete_product, params:[customer_id, productName], doResult:function(result) {
+                loadProductsData([resetProductListAndModalList])
+                $.colorbox.close();
+            }
+
+        })
+    }
+
+
+    //array.sort(getSortFun('desc', 'phone'));
+    function getSortFun(order, sortBy) {
+        var ordAlpah = (order == 'asc') ? '>' : '<';
+        var sortFun = new Function('a', 'b', 'return a.' + sortBy + ordAlpah + 'b.' + sortBy + '?1:-1');
+        return sortFun;
+    }
+
+    function addModal() {
+        var productName =  $('#product_list').val();
+        var modalName = $('#modal_name').val();
+        var modalNameOld = $('#modal_name_old').val();
+        var modalUnits = $('#modal_units').val();
+        var modalSuggestPrice = $('#modal_suggest_price').val();
+        var modals = getProductModals(productName);
+        console.log(modals)
+        modals.push({name: modalName, units: modalUnits, suggest_price: modalSuggestPrice});
+        modals.sort(getSortFun('asc', 'name'))
+
+        pgquery({
+            sql: sql_update_modals, params: [modals,  customer_id, productName], doResult: function (result) {
+                console.log(JSON.stringify(result))
+                loadProductsData([resetModalList])
+                $.colorbox.close();
+            }
+        });
+    }
+    function updateModal() {
+        var productName =  $('#product_list').val();
+        var modalName = $('#modal_name').val();
+        var modalNameOld = $('#modal_name_old').val();
+        var modalUnits = $('#modalUnits').val();
+        var modalSuggestPrice = $('#modal_suggest_price').val();
+        var modals = getProductModals(productName);
+        for (var i in modals) {
+            if (modals[i].name == modalNameOld) {
+                modals[i].name = modalName;
+                modals[i].units = modalUnits;
+                modals[i].suggest_price = modalSuggestPrice;
+                break;
+            }
+        }
+
+        modals.sort(getSortFun('asc', 'name'))
+
+        pgquery({
+            sql: sql_update_modals, params: [modals,  customer_id, productName], doResult: function (result) {
+                console.log(JSON.stringify(result))
+                loadProductsData([resetModalList])
+                $.colorbox.close();
+            }
+        });
+    }
+    function deleteModal() {
+        var productName =  $('#product_list').val();
+        var modalName = $('#modal_name').val();
+        var modalNameOld = $('#modal_name_old').val();
+        var modalUnits = $('#modalUnits').val();
+        var modalSuggestPrice = $('#modal_suggest_price').val();
+        var modals = getProductModals(productName);
+        for (var i in modals) {
+            if (modals[i].name == modalNameOld) {
+                modals.splice(i, 1);
+                break;
+            }
+        }
+        //modals.push({name: modalName, units: modalUnits, suggest_price: modalSuggestPrice});
+        modals.sort(getSortFun('asc', 'name'))
+
+        pgquery({
+            sql: sql_update_modals, params: [modals,  customer_id, productName], doResult: function (result) {
+                console.log(JSON.stringify(result))
+                loadProductsData([resetModalList])
+                $.colorbox.close();
+            }
+        });
+    }
+/*    function loadProducts() {
+        var productList = $('#product_list');
+        productList.empty();
+        for (var i in product_array) {
+            productList.append('<option '+ ((i==0)?'selected':'') +'>'+product_array[i].name+'</option>')
+        }
+    }*/
+
+
+    function getProductModals(product) {
+        for (var i in product_array) {
+            if (product == product_array[i].name) {
+                return product_array[i].modals;
+            }
+        }
+        return null;
+    }
+
+
+    function loadProductsData(callbacks) {
+        product_array = []
+        pgquery({
+            sql: findProductsByCustomer, params: [customer_id], doResult: function (result) {
+                var rows = result.rows;
+                if (rows.length > 0) {
+                    for (var i = 0; i < rows.length; i++) {
+                        product_array.push({name: rows[i].name, modals: rows[i].modals})
+                    }
+                }
+
+                if (callbacks != null){
+                    for (var i in callbacks) {
+                        callbacks[i]();
+                    }
+                }
+            }
+        });
+    }
+
+
+    var resetProductListAndModalList = function() {
+        console.log("exec resetProductListAndModalList")
+        // loadProducts();
+        var productList = $('#product_list');
+
+        productList.empty();
+        productList = $('#product_list');
+        for (var i in product_array) {
+            productList.append('<option ' + ((i == 0) ? 'selected' : '') + '>' + product_array[i].name + '</option>')
+        }
+
+        resetModalList();
+    }
+
+    function resetModalList() {
+        var productList = $('#product_list');
+        var selectedProduct = productList.val();
+        var modals = getProductModals(selectedProduct);
+
+        // loadModals();
+        var modalList = $('#modal_list');
+        modalList.empty();
+        for (var i in modals) {
+            modalList.append('<option ' + ((i == 0) ? 'selected' : '') + '>' + modals[i].name + '</option>')
+        }
+    }
+
+
+    $(function(){
+        loadProductsData([resetProductListAndModalList, afterProductsLoad])
+
+    });
+
+
+
+</script>
+</body>
+</html>

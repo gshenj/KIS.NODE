@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="cn">
+
+
+<head>
+    <meta charset="UTF-8">
+    <title>归属地管理</title>
+    <script>
+        jQuery = require('jquery')
+        $ = jQuery;
+    </script>
+
+    <script src="../scripts/pgquery.js"></script>
+
+    <script src="../scripts/bootstrap/js/bootstrap.js"></script>
+    <script src="../scripts/jquery.ztree.all.js"></script>
+    <script src="../scripts/jquery.colorbox-min.js"></script>
+
+
+    <link href="../scripts/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="data:text/css;charset=utf-8," data-href="../scripts/bootstrap/css/bootstrap-theme.css" rel="stylesheet">
+    <link href="../styles/zTreeStyle/zTreeStyle.css" rel="stylesheet">
+    <link href="../scripts/colorbox/colorbox.css" rel="stylesheet">
+    <link href="../styles/main.css" rel="stylesheet">
+
+
+    <style>
+
+    </style>
+</head>
+<body style="text-align:center;">
+
+
+<div style="width:400px; text-align: left; margin:20px auto;">
+    <div style="float:left; width:298px; height:600px; background-color: #eee;border:1px solid #ccc;"
+         id="region_opt_div">
+        <ul id="region_opt_tree" class="ztree"></ul>
+    </div>
+
+    <div style="float:left; width:100px; height:100%">
+        <button onclick="addRegion()" type="button" class="btn btn-primary"
+                style="margin:30px 10px 10px; display:block;">增加
+        </button>
+        <button onclick="editRegion()" type="button" class="btn btn-success"
+                style="margin:10px 10px; display:block;">编辑
+        </button>
+        <button onclick="deleteRegion()" type="button" class="btn btn-danger"
+                style="margin:10px 10px; display:block;">删除
+        </button>
+
+    </div>
+</div>
+
+<div style="display:none;">
+    <div id="region_input" style=" text-align:center;padding:40px 20px;">
+        <div id="region_tip" style="color:#333333"><h3></h3></div>
+        <div style="margin:0px auto; width:400px; text-align: left; border:1px solid #ccc; background-color:#eee; padding:20px 20px;">
+            <div class="box_label" style="margin-top:0px;"><strong>地区名字：</strong><br/> <input id="region_name_input" type="text" class="box_input"/></div>
+            <div class="box_label"><strong>地区编码：</strong><br/>  <input id="region_pcode_input" type="text" class="box_input"/></div>
+            <div class="box_label"  style="text-align:right; margin-right:10px;">
+                <button id="btn_opt" class="btn" onclick="doneOptRegion()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function beforeEditName() {
+        return false;
+    }
+
+    var setting2 = {
+        view: {
+            fontCss: {"font-size": "16px"}
+        },
+        callback: {
+            beforeEditName: beforeEditName
+        }
+    };
+    var regionTreeObj = null;
+    function initTreeMenu() {
+        if (regionTreeObj != null) {
+            regionTreeObj.destroy();
+        }
+
+        pgquery({
+            sql: findRegions, params: [], doResult: function (result) {
+                var zNodes = new Array();
+                var rows = result.rows;
+                for (var i = 0; i < rows.length; i++) {
+                    var _node = {name: rows[i].region.name, pcode: rows[i].region.pcode};
+                    if (rows[i].region.cities != null) {  // or undefined
+                        _node.isParent = true;
+                        _node.children = rows[i].region.cities;
+                    }
+                    zNodes.push(_node);
+                }
+
+                var zNodeX = new Array();
+                zNodeX.isParent = true;
+                zNodeX.children = zNodes;
+                zNodeX.name = "归属地区";
+                zNodeX.open = true;
+                zNodeX.pcode = ""
+
+                regionTreeObj = $.fn.zTree.init($("#region_opt_tree"), setting2, [zNodeX]);
+            }
+        })
+    }
+
+
+    function showBox() {
+        $.colorbox({inline: true, width: '500px', height: '400px', speed: 0, href: '#region_input'})
+    }
+
+    function hideBox() {
+        $.colorbox.close();
+    }
+
+
+    function addRegion() {
+        var nodes = regionTreeObj.getSelectedNodes();
+        if (nodes.length > 0) {
+            if (!nodes[0].isParent) {
+                alert('无法添加下级地区！')
+                return;
+            }
+
+            // else
+            $('#region_tip h3').html('新增地区')
+            $('#btn_opt').html('保存');
+            $('#btn_opt').removeClass();
+            $('#btn_opt').addClass('btn btn-primary')
+            $('#region_name_input').val('');
+            $('#region_pcode_input').val('');
+            OPT_FLAG = 'add';
+            PARENT_NODE = nodes[0];
+            showBox();
+
+        } else {
+            $('#region_tip h3').html('新增地区');
+            $('#btn_opt').html('保存');
+            $('#btn_opt').removeClass();
+            $('#btn_opt').addClass('btn btn-primary')
+            $('#region_name_input').val('');
+            $('#region_pcode_input').val('');
+            OPT_FLAG = 'add';
+            PARENT_NODE = null;
+            showBox();
+        }
+    }
+
+    function deleteRegion() {
+        var nodes = regionTreeObj.getSelectedNodes();
+        if (nodes.length == 0) {
+            alert('请先选择一个地区！');
+            return;
+        }
+
+        if (nodes[0].isParent) {
+            if (nodes[0].children.length > 0) {
+                alert('有下属区域，无法删除！')
+                return;
+            }
+
+            $('#region_tip h3').html('删除地区');
+            $('#btn_opt').html('确定删除');
+            $('#btn_opt').removeClass();
+            $('#btn_opt').addClass('btn btn-danger')
+            $('#region_name_input').val(nodes[0].name);
+            $('#region_pcode_input').val(nodes[0].pcode);
+            OPT_FLAG = 'delete';
+            DELETE_NODE = nodes[0];
+            showBox();
+
+
+        } else {
+
+            // check customer of this region.
+            $('#region_tip h3').html('删除地区')
+            $('#btn_opt').html('确定删除');
+            $('#btn_opt').removeClass();
+            $('#btn_opt').addClass('btn btn-danger')
+            $('#region_name_input').val(nodes[0].name);
+            $('#region_pcode_input').val(nodes[0].pcode);
+            OPT_FLAG = 'delete';
+            DELETE_NODE = nodes[0];
+            showBox();
+        }
+    }
+
+    function editRegion() {
+        var nodes = regionTreeObj.getSelectedNodes();
+        if (nodes.length == 0) {
+            alert('请选择地区！')
+            return;
+        }
+
+        $('#region_tip h3').html('修改地区')
+        $('#btn_opt').html('保存');
+        $('#btn_opt').removeClass();
+        $('#btn_opt').addClass('btn btn-success')
+        $('#region_name_input').val(nodes[0].name);
+        $('#region_pcode_input').val(nodes[0].pcode);
+        OPT_FLAG = 'edit';
+        EDIT_NODE = nodes[0];
+
+        if (nodes[0].isParent) {
+            // 修改省级别;
+
+        } else {
+
+            // 修改市级别
+        }
+
+        showBox();
+
+    }
+
+    function doneOptRegion() {
+        if (OPT_FLAG == 'add') {
+            var _name = $('#region_name_input').val();
+            var _pcode = $('#region_pcode_input').val();
+
+            console.log("name:" + _name + ", pcode:" + _pcode);
+
+            // add node in nodes[0]
+            //  var newNode = {name:_name, pcode:_pcode};
+            //  newNode = regionTreeObj.addNodes(nodes[0], newNode);
+
+            if (PARENT_NODE == null) {
+                var p1 = {name: _name, pcode: _pcode, cities: []}
+                pgquery({
+                    sql: sql_add_region, params: [p1], doResult: function (result) {
+                        regionTreeObj.destroy();
+                        console.log("Re init tree menu.")
+                        initTreeMenu();
+                    }
+                });
+
+            } else {
+                var cities = [];
+                for (var x in PARENT_NODE.children) {
+                    cities.push({name: PARENT_NODE.children[x].name, pcode: PARENT_NODE.children[x].pcode});
+                }
+
+                var _node = {name: _name, pcode: _pcode};
+                cities.push(_node);
+
+                var p1 = {name: PARENT_NODE.name, pcode: PARENT_NODE.pcode, cities: cities};
+                console.log("New parent node is :" + JSON.stringify(p1))
+                pgquery({
+                    sql: sql_update_region, params: [p1, p1.name], doResult: function (result) {
+                        regionTreeObj.destroy();
+                        console.log("Re init tree menu.")
+                        initTreeMenu();
+                    }
+                });
+
+            }
+
+            hideBox();
+
+        }
+
+        else if (OPT_FLAG == 'edit') {
+            var _name = $('#region_name_input').val();
+            var _pcode = $('#region_pcode_input').val();
+            if (EDIT_NODE.isParent) {
+                //修改省
+                var _old_name = EDIT_NODE.name;
+                var _old_pcode = EDIT_NODE.pcode;
+
+                var cities = [];
+                for (var x in EDIT_NODE.children) {
+                    cities.push({name: EDIT_NODE.children[x].name, pcode: EDIT_NODE.children[x].pcode});
+                }
+
+                var region_node = {name: _name, pcode: _pcode, cities: cities};
+                pgquery({
+                    sql: sql_update_region, params: [region_node, _old_name], doResult: function (result) {
+                        regionTreeObj.destroy();
+                        console.log("Re init tree menu.")
+                        initTreeMenu();
+                    }
+                });
+
+            } else {
+                var _old_name = EDIT_NODE.name;
+                var _old_pcode = EDIT_NODE.pcode;
+                if (_old_name == _name && _old_pcode == _pcode) {
+
+                } else {
+                    var cities = [];
+                    var _parent_node = EDIT_NODE.getParentNode();
+                    for (var x in _parent_node.children) {
+                        if (_parent_node.children[x].name != _old_name) {
+                            cities.push({name: _parent_node.children[x].name, pcode: _parent_node.children[x].pcode});
+                        } else {
+                            cities.push({name: _name, pcode: _pcode});
+                        }
+                    }
+                    var region = {name: _parent_node.name, pcode: _parent_node.pcode, cities: cities};
+                    pgquery({
+                        sql: sql_update_region, params: [region, region.name], doResult: function (result) {
+                            regionTreeObj.destroy();
+                            console.log("Re init tree menu.")
+                            initTreeMenu();
+                        }
+                    });
+
+                }
+            }
+
+            hideBox();
+
+        }
+
+        else if (OPT_FLAG == 'delete') {
+
+            if (DELETE_NODE.isParent) {
+                // 删除省
+                pgquery({
+                    sql: sql_delete_region, params: [DELETE_NODE.name], doResult: function (result) {
+                        regionTreeObj.destroy();
+                        console.log("Re init tree menu.")
+                        initTreeMenu();
+                    }
+                });
+
+            } else {
+                // 删除市
+                var _parent_node = DELETE_NODE.getParentNode();
+                var _parent_name = _parent_node.name;
+
+                var cities = [];
+                for (var x in _parent_node.children) {
+                    if (_parent_node.children[x].name == DELETE_NODE.name && _parent_node.children[x].pcode == DELETE_NODE.pcode) {
+                        continue;
+                    }
+                    cities.push({name: _parent_node.children[x].name, pcode: _parent_node.children[x].pcode});
+                }
+
+                var p1 = {name: _parent_name, pcode: _parent_node.pcode, cities: cities};
+                console.log("After delete, new parent node json :" + JSON.stringify(p1))
+
+                pgquery({
+                    sql: sql_update_region, params: [p1, _parent_name], doResult: function (result) {
+                        regionTreeObj.destroy();
+                        console.log("Re init tree menu.")
+                        initTreeMenu();
+                    }
+                });
+            }
+
+            hideBox();
+        }
+    }
+
+
+    $(function () {
+        initTreeMenu();
+    })
+
+</script>
+
+</body>
+</html>
