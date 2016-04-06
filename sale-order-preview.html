@@ -9,38 +9,41 @@
     <script type="text/javascript">
         jQuery = require('jquery')
         $ = jQuery;
-        var ipc = require('ipc');
-        var order = ipc.sendSync('session', {opt: 'get', key: 'order'});
-      //  console.log(JSON.stringify(order)); // prints "pong"
-
+        var ipcRenderer = require('electron').ipcRenderer;
+        var order = ipcRenderer.sendSync('session', {opt: 'get', key: 'order'});
         var type = order.type;
         var order_info = order.order_info;
+
+
+        console.log(JSON.stringify(order))
     </script>
     <script src="scripts/pgquery.js"></script>
 
     <script type="text/javascript" src="scripts/accounting.min.js"></script>
     <script>
 
-        var printed = false;
-        window.onbeforeunload = function() {
-            ipc.sendSync("hide_print_win", {type:type,printed:printed});
+        accounting.settings = {
+            currency: {
+                symbol: "¥",   // default currency symbol is '$'
+                format: "%s%v", // controls output: %s = symbol, %v = value/number (can be object: see below)
+                decimal: ".",  // decimal point separator
+                thousand: ",",  // thousands separator
+                precision: 2   // decimal places
+            },
+            number: {
+                precision: 0,  // default precision on numbers is 0
+                thousand: ",",
+                decimal: "."
+            }
         }
+        var printed = false;
+
+        const BrowserWindow = require('electron').remote.BrowserWindow;
+        var mainWin = BrowserWindow.getFocusedWindow();
+
 
         $(function () {
-            accounting.settings = {
-                currency: {
-                    symbol: "¥",   // default currency symbol is '$'
-                    format: "%s%v", // controls output: %s = symbol, %v = value/number (can be object: see below)
-                    decimal: ".",  // decimal point separator
-                    thousand: ",",  // thousands separator
-                    precision: 2   // decimal places
-                },
-                number: {
-                    precision: 0,  // default precision on numbers is 0
-                    thousand: ",",
-                    decimal: "."
-                }
-            }
+
             for (var i = 2; i <= 5; i++) {
                 var tr = $('tr[idx="1"]').clone();
                 $(tr).attr("idx", i);
@@ -84,13 +87,11 @@
             }
             $("#product_total_sum").html(_total_sum);
 
-
             $(".btn-print").bind('click', function(){doPrint(this)})
         });
 
 
         function doPrint(src) {
-
 
             if (type == "create") {
                 // 保存并打印
@@ -98,30 +99,22 @@
                // $(src).html('正在保存...')
                 pgquery({
                     sql: addSaleOrder,
-                    params: [order.order_number, order_info.customer_id, order_info.sale_date, order_info],
+                    params: [order_info.order_number, order_info.customer_id, order_info.sale_date, order_info],
                     doResult: function (result) {
                         console.log(JSON.stringify(result))
                         //$(src).html('保存成功，开始打印...');
 
                         window.print();
                         printed = true;
-
-                        // $(src).html('已打印，关闭')
-                        // $(src).removeAttr("disabled");
-                        // $('.btn-print').unbind('click')
-                        // $('.btn-print').bind('click', function(){
-                        //   var ret = ipc.sendSync('chg_url', {url:'/jquery-ui-example.html', printed:1});
-                        //    window.close();  // will call onunload
-                        //})
-
+                        mainWin.emit('printed', type)
                     }
                 });
 
             } else if (type == "select") {
                 // 已经存在的选择打印
                 window.print();
+                mainWin.emit('printed', type)
             }
-
         }
 
     </script>

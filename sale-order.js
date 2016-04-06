@@ -1,27 +1,7 @@
 /**
  * Created by jin on 2015/11/23 0023.
  */
-
-var customerTable = null;
-var table_click_attached = false;
-
-var zTreeObj = null;;
-var setting = {
-    view: {
-        fontCss : {"font-size":"16px"},
-       dblClickExpand: dblClickExpand
-
-    },
-    callback: {
-        onClick: zTreeOnClick
-    }
-};
-
-function dblClickExpand(treeId, treeNode) {
-    return treeNode.level > 0;
-}
-
-var first_time_load_new_order_target = true;
+const ipcRenderer = require('electron').ipcRenderer;
 
 var datepicker_options = {
     changeMonth: true,
@@ -42,49 +22,39 @@ var datepicker_options = {
     showButtonPanel: true,
     gotoCurrent: true
 };
-
-
-
-var ipc = require('ipc');
-var user = ipc.sendSync('session', {opt: 'get', key: 'user'});
-console.log('Login user: ' + user.name); // prints "pong"
-
-ipc.on("hide_overlay", function (arg) {
-    console.log(arg)
-    hide_overlay(arg);
-});
-
-var hide_overlay = function (arg) {
-    $("#__m").modal("hide");
-    if (arg.type == 'create') {
-        if (arg.printed) {
-
-            //todo  清空填
-            setOrderForm(true);
-
-            // jump to list
-            $('.m_a[data-target="__list__"]').click();
-
-        }
-    } else if (arg.type == 'select') {
-
+accounting.settings = {
+    currency: {
+        symbol: "¥",   // default currency symbol is '$'
+        format: "%s%v", // controls output: %s = symbol, %v = value/number (can be object: see below)
+        decimal: ".",  // decimal point separator
+        thousand: ",",  // thousands separator
+        precision: 2   // decimal places
+    },
+    number: {
+        precision: 0,  // default precision on numbers is 0
+        thousand: ",",
+        decimal: "."
     }
-}
+};
 
-var logout = function () {
-    // if (window.confirm("确定退出？")) {
-    // doLogout()
-    var ret = ipc.sendSync('session', {opt: 'clear', key: ''});
-    if (ret == 'true') {
-        console.log("Clear session!")
-        user = ipc.sendSync('session', {opt: 'get', key: 'user'});
-        console.log('User -> ' + user); // prints "pong"
-    }
-    document.location.href = "login.html"
-    // }
-}
+var modals = null;
+var p_win = null;
+var c_customer_id = null;
+var c_customer_name = null;
+var c_customer_address = null;
+var c_customer_phone = null;
+var c_customer_principal = null;
+var c_sale_date = null;
+var c_product_modals = null;
+var c_product_total_sum = null;
+
+var user = ipcRenderer.sendSync('session', {opt: 'get', key: 'user'});
+
+
 
 $(function () {
+    //console.log('Login user: ' + user.name);
+
     $(".m_a").click(function () {
         $('.container').hide();
         var target = $(this).attr("data-target");
@@ -96,7 +66,7 @@ $(function () {
 
         /*if (target == '__new__') {
 
-        } else*/
+         } else*/
         if (target == '__list__') {
             listOrders(15, 0)
         } else if (target=='__sys__') {
@@ -109,6 +79,18 @@ $(function () {
 });
 
 
+function logout () {
+    // if (window.confirm("确定退出？")) {
+    // doLogout()
+    var ret = ipc.sendSync('session', {opt: 'clear', key: ''});
+    if (ret == 'true') {
+        console.log("Clear session!")
+        user = ipc.sendSync('session', {opt: 'get', key: 'user'});
+        console.log('User -> ' + user); // prints "pong"
+    }
+    document.location.href = "login.html"
+    // }
+}
 function findByOrderNumber(order_number) {
     pgquery({
         sql: findSaleOrder, params: [order_number], doResult: function (result) {
@@ -131,38 +113,15 @@ function findByOrderNumber(order_number) {
         }
     });
 }
-var customerData = new Array();
-var customerInfo = new Array();
-var modals = new Array();
-accounting.settings = {
-    currency: {
-        symbol: "¥",   // default currency symbol is '$'
-        format: "%s%v", // controls output: %s = symbol, %v = value/number (can be object: see below)
-        decimal: ".",  // decimal point separator
-        thousand: ",",  // thousands separator
-        precision: 2   // decimal places
-    },
-    number: {
-        precision: 0,  // default precision on numbers is 0
-        thousand: ",",
-        decimal: "."
-    }
-}
-var p_win = null;
-
-var c_customer_id = null;
-var c_customer_name = null;
-var c_customer_address = null;
-var c_customer_phone = null;
-var c_customer_principal = null;
-var c_sale_date = null;
-var c_product_modals = null;
-var c_product_total_sum = null;
+/*var customerData = new Array();
+var customerInfo = new Array();*/
 
 function print_order() {
     //window.print();
-    c_customer_id = $('#customer_name').select2('val');
-    for (var i = 0; i < customerData.length; i++) {
+    c_customer_id = $('#customer_id').val();
+    c_customer_name = $('#customer_name').val();
+
+   /* for (var i = 0; i < customerData.length; i++) {
         var _children = customerData[i].children;
         for (var j = 0; j < _children.length; j++) {
             if (_children[j].id == c_customer_id) {
@@ -170,7 +129,7 @@ function print_order() {
                 break;
             }
         }
-    }
+    }*/
     c_customer_address = $('#customer_address').val();
     c_customer_principal = $('#customer_principal').val();
     c_customer_phone = $('#customer_phone').val();
@@ -180,19 +139,26 @@ function print_order() {
         c_product_total_sum = accounting.unformat(c_product_total_sum)
     }
 
+
+
+
     c_product_modals = new Array();
     var _modals = $('.product_modal');
     for (var i = 0; i < _modals.length; i++) {
-        var modal_id = $(_modals[i]).val();
-        if (modal_id <= 0) {
+        var modal = $(_modals[i]).val();
+        if (modal == '') {
             continue;
         }
 
-        var modal_name = getProductModalNameById(modal_id);
+        //var modal_name = getProductModalNameById(modal);
         var idx = $(_modals[i]).parent().parent().attr("idx");
-        var product_category = $('tr[idx="' + idx + '"] .product_category').val();
-        var product_category_id = $('tr[idx="' + idx + '"] .product_category').attr("category_id");
+        var product_name = $('tr[idx="' + idx + '"] .product_name').val();
+        // var product_category_id = $('tr[idx="' + idx + '"] .product_category').attr("category_id");
         var product_num = $('tr[idx="' + idx + '"] .product_num').val();
+        if (product_num == '') {
+            continue;
+        }
+
         var product_units = $('tr[idx="' + idx + '"] .product_units').val();
         var product_unit_price = $('tr[idx="' + idx + '"] .product_unit_price').val();
         var product_sum = $('tr[idx="' + idx + '"] .product_sum').val();
@@ -200,10 +166,10 @@ function print_order() {
 
 
         c_product_modals.push({
-            product_modal_id: modal_id,
-            product_modal_name: modal_name,
-            product_category_id: product_category_id,
-            product_category_name: product_category,
+           // product_modal_id: modal,
+            product_modal_name: modal,
+           // product_category_id: product_category_id,
+            product_category_name: product_name,
             product_units: product_units,
             product_num: product_num,
             product_unit_price: product_unit_price,
@@ -211,19 +177,6 @@ function print_order() {
             product_memo: product_memo
         })
 
-    }
-
-
-    function getProductModalNameById(id) {
-        for (var j = 0; j < modals.length; j++) {
-            var options = modals[j].options;
-            for (var k = 0; k < options.length; k++) {
-                if (options[k].modal_id == id) {
-                    return options[k].modal_name;
-                }
-            }
-        }
-        return null;
     }
 
 
@@ -242,36 +195,78 @@ function print_order() {
 
     var order = {order_info: order_info, type: "create"}
 
-    pgquery({
-        sql: getCurrentOrderNumber, params: [], doResult: function (result) {
-            order.order_info.order_number = result.rows[0].order_number;
-            order.order_number = order.order_info.order_number;
-            //console.log(JSON.stringify(order_info))
-            var r = ipc.sendSync('session', {opt: 'put', key: 'order', value: order});
+    const BrowserWindow = require('electron').remote.BrowserWindow;
+    var mainWin = BrowserWindow.getFocusedWindow();
 
-            // way1
-            // r = ipc.sendSync('show_print_win', {url:'sale-order-preview.html'});
+    var win = new BrowserWindow({width: 900, height: 600, show: false, resizable: false, autoHideMenuBar: true});
+    win.on('closed', function () {
+        win = null;
+        mainWin.setClosable(true);
+        mainWin.setResizable(true);
+        mainWin.setMinimizable(true);
+        mainWin.setMaximizable(true);
+        mainWin.setMovable(true);
+        $.colorbox.close()
+    });
 
+    /*win.on('blur', function() {
+        win.focus();
+    })*/
 
-            $('#__m').modal('show')
-            //var r = ipc.sendSync('hide_main_window', {});
-            p_win = window.open('sale-order-preview.html', '打印', "width=900,height=600,alwaysOnTop=true");
-            window.onfocus = function () {
-                if (!p_win.closed) {
-                    p_win.focus();
-                }
-            }
+    win.on('printed', function(data) {
+        if (data == 'create') {
+            // resetForm();
+            resetOrderForm()
         }
     });
+
+
+
+    win.loadURL('file://' + __dirname + '/sale-order-preview.html?id=' + customer_id);
+    $.colorbox({
+        inline: "#main_layout",
+        width: -1,
+        height: -1,
+        open: true,
+        speed: 0,
+        overlayClose: false,
+        escKey: false,
+        arrowKey: false
+    });
+
+
+
+
+    mainWin.setClosable(false);
+    mainWin.setResizable(false);
+    mainWin.setMinimizable(false);
+    mainWin.setMaximizable(false);
+    mainWin.setMovable(false);
+
+
+    pgquery({
+        sql: getCurrentOrderNumber, params: [], doResult: function (result) {
+            var curr_order_number =  result.rows[0].order_number;
+            order.order_info.order_number = curr_order_number;
+            order.order_number = order.order_info.order_number;
+            //console.log(JSON.stringify(order_info))
+            ipcRenderer.sendSync('session', {opt: 'put', key: 'order', value: order});
+
+            win.show();
+        }
+    });
+
+
 }
 
-
-
-
+/**
+ * 加载并初始化日期控件
+ */
 function initSaleDate() {
 
     $("#sale_date").datepicker(datepicker_options);
-    $("#sale_date").datepicker("setDate",new Date());
+   // $("#sale_date").datepicker("setDate",new Date());
+
     $("#sale_date_begin").datepicker(datepicker_options);
     $("#sale_date_end").datepicker(datepicker_options);
 
@@ -442,6 +437,7 @@ function setTotalSum() {
     $('#product_total_sum').html(calcTotalSum());
 }
 
+
 function listOrders(limit, offset) {
     pgquery({
         sql: countAllSaleOrder, params: [], doResult: function (result) {
@@ -493,10 +489,9 @@ function showModalText(modals) {
 }
 
 
-
-
-
-
+/**
+ *
+ */
 function initNewOrderPage() {
     initSaleDate()
     $('.product_num').on('change', function (){ changeNumOrUnitPrice(this)})
@@ -504,459 +499,71 @@ function initNewOrderPage() {
     $(".product_name").on('change', function (){selectProduct(this)})
     $(".product_modal").on('change', function (){selectModal(this)})
 
-    //setOrderForm(false);
-    $('#customer_name').colorbox({
-            //  transition:'none',
-            inline: true, width: '90%', height: '96%', href: '#customer_choosen', title: '选择客户',
-            onComplete: function () {
+    //todo
+    $('#customer_name').on('click', function(){
+        const BrowserWindow = require('electron').remote.BrowserWindow;
+        var mainWin =  BrowserWindow.getFocusedWindow()
+        // In the main process.
+        //const BrowserWindow = require('electron').BrowserWindow;
+        $.colorbox({inline:"#main_layout", width:-1, height:-1, open:true, speed:0,overlayClose:false,escKey:false,arrowKey:false});
 
-                initRegionsTree();
-                // 初始化加载所有客户
-                initCustomerTable();
-            },
-            onClosed: function () {
-                if (zTreeObj != null) {
-                    zTreeObj.destroy();
-                    zTreeObj = null;
+        var win = new BrowserWindow({ width: 1200, height: 700, show: false, resizable:false,autoHideMenuBar:true,acceptFirstMouse:true });
+        win.on('select_customer', function(customer) {
+            console.log("Get customer => "+JSON.stringify(customer));
+            // 获取到客户数据
+            $('#customer_id').val(customer.id);
+            $('#customer_name').val(customer.name);
+            $('#customer_address').val(customer.address);
+            $('#customer_principal').val(customer.principal);
+            $('#customer_phone').val(customer.phone);
+            // get products of customer
+            pgquery({
+                sql: findProductsByCustomer, params: [customer.id], doResult: function (result) {
+                    var products = result.rows;
+                    setProductSelect(products)
+                    $.colorbox.close();
                 }
-                if (customerTable != null) {
-                    customerTable.destroy();
-                    $('#customer_table').empty();
-                    customerTable = null;
-                }
-            }
-    });
-}
+            });
 
+        });
 
-function setOrderForm (reset){
+        win.on('closed', function() {
+            win = null;
+            mainWin.setClosable(true);
+            mainWin.setResizable(true);
+            mainWin.setMinimizable(true);
+            mainWin.setMaximizable(true);
+            mainWin.setMovable(true);
+            $.colorbox.close()
+        });
 
+        win.loadURL('file://' + __dirname + '/sys_manage/customer-manage.html?flag=1');
+        win.show();
+        mainWin.setClosable(false);
+        mainWin.setResizable(false);
+        mainWin.setMinimizable(false);
+        mainWin.setMaximizable(false);
+        mainWin.setMovable(false);
 
-
-    if (reset) {
-        $('.product_modal').select2('destroy');
-        $('tr.modal_tr').remove();
-    }
-
-
-    $('#customer_address').val('');
-    $('#customer_principal').val('');
-    $('#customer_phone').val('');
-    $('#product_total_sum').html('');
-
-
-    initSaleDate();
-
-    $('#customer_name').select2()
-
-
-    var modal_td_str = '<td><select class="product_modal"></select></td>'+
-        '<td><input type="text" class="product_category"/></td>'+
-        '<td><input type="text" class="product_units"/></td>'+
-        '<td><input type="text" class="product_num"/></td>'+
-        '<td><input type="text" class="product_unit_price"/></td>'+
-        '<td><input type="text" class="product_sum"/></td>'+
-        '<td><input type="text" class="product_memo"/></td>';
-
-    for (var i = 1; i <= 5; i++) {
-        $('<tr class="modal_tr" idx="'+ i +'">'+modal_td_str+'</tr>').insertBefore($('#total_sum_tr'));
-    }
-    //
-    $('.product_modal').html('<option class="opt" value="0">&nbsp;</option>');
-    //
-    $('.product_modal').select2({width: '100%'});
-    //
-    //$('.product_modal').on('change', function(){change_modal(this)});
-
-    $('.product_num').on('change', function () {
-        changeNumOrUnitPrice(this);
-    })
-    $('.product_unit_price').on('change', function () {
-        changeNumOrUnitPrice(this);
     })
 
-    // 清空数组
-    customerData.length=0;
-
-    pgquery({
-        sql: getCustomers, params: [], doResult: function (result) {
-            var rows = result.rows;
-            if (rows.length > 0) {
-                for (var i = 0; i < rows.length; i++) {
-                    var found = false;
-                    var _customer_option = {id: rows[i].customer_id, text: rows[i].customer_name};
-                    var _customer_info = {
-                        address: rows[i].address,
-                        phone: rows[i].mobile_number,
-                        principal: rows[i].principal
-                    };
-                    for (var j = 0; j < customerData.length; j++) {
-                        if (rows[i].city_name == customerData[j].text) {
-                            customerData[j].children.push(_customer_option)
-                            customerInfo['"' + rows[i].customer_id + '"'] = _customer_info;
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        customerData.push({text: rows[i].city_name, children: [_customer_option]});
-                        customerInfo['"' + rows[i].customer_id + '"'] = _customer_info;
-                    }
-                }
-            }
-
-
-            //$('#customer_name').select2('destroy');
-            // 清空原有内容
-                $('#customer_name').html('');
-                $('#customer_name').select2({
-                    data: customerData,
-                    // allowClear: true,
-                    placeholder: "请选择公司"
-                })
-               // $('#customer_name').select2('val', '')
-               // console.log("val: "+$('#customer_name').select2('val'))
-
-
-            var changeCustomerDeal =   function () {
-                console.log('Change_customerName');
-                var _id = $('#customer_name').val();
-                console.log('Change_customerName, '+_id);
-                if (_id==''||_id==null) {
-                    $('#customer_address').val('');
-                    $('#customer_phone').val('');
-                    $('#customer_principal').val('');
-
-                } else {
-
-                    $('#customer_address').val(customerInfo['"' + _id + '"'].address);
-                    $('#customer_phone').val(customerInfo['"' + _id + '"'].phone);
-                    $('#customer_principal').val(customerInfo['"' + _id + '"'].principal);
-                }
-                // get product_modals
-                //var ccid = $('#customer_name').val()
-                var ccid = $('#customer_name').select2('val')
-                modals = new Array();
-                pgquery({
-                    sql: getProductModals, params: [ccid], doResult: function (res) {
-
-                        if (res.rows.length > 0) {
-                            // alert(result.rows.length)
-                            for (var i = 0; i < res.rows.length; i++) {
-                                var category_id = res.rows[i].category_id;
-                                var category_name = res.rows[i].category_name;
-                                var modal_name = res.rows[i].modal_name;
-                                var modal_id = res.rows[i].modal_id;
-                                var units_id = res.rows[i].units_id;
-                                var units_name = res.rows[i].units_name;
-                                var suggest_unit_price = res.rows[i].suggest_unit_price;
-                                var found = false;
-
-                                var _option_modal = {
-                                    modal_name: modal_name,
-                                    modal_id: modal_id,
-                                    category_id: category_id,
-                                    category_name: category_name,
-                                    units_id: units_id,
-                                    units_name: units_name,
-                                    suggest_unit_price: suggest_unit_price
-                                };
-
-                                for (var j = 0; j < modals.length; j++) {
-                                    if (modals[j].category_id == category_id) {
-                                        modals[j].options.push(_option_modal)
-                                        found = true;
-                                        break;
-                                    }
-                                }
-
-                                if (!found)
-                                    modals.push({
-                                        category_id: category_id,
-                                        category_name: category_name,
-                                        options: [_option_modal]
-                                    })
-                            }
-                        }
-
-                        var s = '<option class="opt" value="0">&nbsp;</option>';
-                        for (var k = 0; k < modals.length; k++) {
-                            s += '<optgroup label="' + modals[k].category_name + '">';
-                            var options = modals[k].options;
-                            for (var x = 0; x < options.length; x++) {
-                                s += '<option class="opt" units="' + options[x].units + '" value="' + options[x].modal_id + '">' + options[x].modal_name + '</option>'
-                            }
-                            s += '</optgroup>';
-                        }
-
-                        // $('.product_modal').select2('destroy');
-                        // $('.product_modal').off('change');
-                        $('.product_modal').html(s);
-                        clear_modal_items();
-                        $('.product_modal').select2({width: '100%'});
-                        if (!reset) {
-                            // change事件只绑定一次
-                            $('.product_modal').on('change', function () {
-                                change_modal(this)
-                            });
-                        }
-                    }
-                });
-            };
-
-
-            if (!reset) {
-                // change 事件只绑定一次
-                $('#customer_name').on('change', changeCustomerDeal);
-                console.log("Bind change event on #customer_name")
-            }
-
-
-////////////////////////////////////////////////// for list.
-            $('#customer_name_1').select2({
-                data: customerData,
-                allowClear: true,
-                placeholder: "请选择公司"
-            })
-////////////////////////////////////////////////// for list.
-
-        }
-    });
 }
 
+/**
+ * 重置表单
+ */
+function resetOrderForm() {
+    /*
+    const BrowserWindow = require('electron').remote.BrowserWindow;
+    var win = BrowserWindow.getFocusedWindow();
+    win.reload();
+    */
 
-/*初始化地区菜单树*/
-function initRegionsTree() {
-    if (zTreeObj != null) {
-        zTreeObj.destroy();
-        zTreeObj = null;
-
-    }
-    pgquery({
-        sql: findRegions, params: [], doResult: function (result) {
-            //alert(result.rows[0].region.cities[0].name)
-            var nodes = [];
-            var rows = result.rows;
-            for (var i = 0; i < rows.length; i++) {
-                var _node = {name: rows[i].region.name};
-                if (rows[i].region.cities != null) {  // or undefined
-                    _node.isParent = true;
-                    _node.children = rows[i].region.cities;
-                }
-                nodes.push(_node);
-            }
-
-            console.log(nodes);
-
-            var nodeAll = [];
-            nodeAll.isParent = true;
-            nodeAll.children = nodes;
-            nodeAll.name="归属地区";
-            nodeAll.pcode = ""
-            nodeAll.open=true;
-            zTreeObj = $.fn.zTree.init($("#region_tree"), setting, [nodeAll]/*nodes*/);
-        }
-    });
-}
-
-/*地区点击响应函数*/
-function zTreeOnClick(event, treeId, treeNode) {
-    if (treeNode.pcode == '') {
-        // root node
-        fillAllCustomers();
-        return;
-    }
-
-
-    if(treeNode.isParent) {
-        var pcodeArray = [];
-        for (var x in treeNode.children) {
-            pcodeArray.push(treeNode.children[x].pcode);
-        }
-        changeDataTable(pcodeArray)
-    } else {
-        changeDataTable(treeNode.pcode)
-    }
+    $('input').val('');
+    $('select').html('<option></option>')
+    clearTotalSum();
 
 }
-
-/*初始化客户列表表格*/
-function initCustomerTable() {
-    if (customerTable != null) {
-        customerTable.destroy();
-        $('#customer_table').empty();
-        customerTable = null;
-    }
-
-    customerTable =  $('#customer_table').DataTable({
-        "scrollY":$('#regions_menu_div').height() - 150,
-        "dom": '<"datatable_search"f><"datatable_toolbar">ti',
-        "scrollCollapse": false,
-        "paging": false,
-        "data":[],
-        "rowId":'DT_rowId',
-        "columnDefs": [
-            //{
-            //    "targets": [ 0 ],
-            //    "visible": false,
-            //    "searchable": false
-            //},
-            {
-                "title":"名称",
-                "width":"30%",
-                "targets":[0],
-                "data":"mc"
-            },
-            {"title":"简码",
-                "width":"10%",
-                "targets":[1],
-                "data": 'jm'
-            },
-            {"title":"电话",
-                "width":"10%",
-                "targets":[2],
-                "data": 'dh'
-            },
-            {"title":"负责人",
-                "width":"10%",
-                "targets":[3],
-                "data": 'fzr'
-            },
-            {"title":"地址",
-                "width":"30%",
-                "targets":[4],
-                "data": 'dz'
-            }
-        ],
-        scroller: {
-            rowHeight: 20
-        },
-        "language": {
-            "url": "scripts/datatable/cn.json"
-        },
-        "initComplete": function(settings, json) {
-            console.log("initComplete")
-           // console.log($('.datatable_toolbar').html())
-            $(".datatable_toolbar").html('<button onclick="doneSelectCustomer()">确定选择</button>');
-            //
-            fillAllCustomers();
-        }
-    });
-
-
-    if (table_click_attached) {
-        return;
-    }
-
-    $('#customer_table tbody').on('click', 'tr', function () {
-        if ( $(this).hasClass('selected') ) {
-            $(this).removeClass('selected');
-        }
-        else {
-            customerTable.$('tr.selected').removeClass('selected');
-            $(this).addClass('selected');
-        }
-    });
-    table_click_attached = false;
-}
-
-
-
-function doneSelectCustomer() {
-    var rowId = customerTable.row('.selected').id();
-    var data = customerTable.row('.selected').data();
-
-    var customer = {id:rowId, name:data.mc, address:data.dz, phone:data.dh, principal:data.fzr }
-    console.log("Selected customer: "+JSON.stringify(customer))
-    if ($('#customer_name').val() == customer.name) {
-        console.log("Customer name not changed!")
-        /*没有重新选择客户，直接关闭弹出框*/
-        $.colorbox.close();
-        return;
-    }
-
-
-    $('#customer_id').val(customer.id);
-    $('#customer_name').val(customer.name);
-    $('#customer_address').val(customer.address);
-    $('#customer_principal').val(customer.principal);
-    $('#customer_phone').val(customer.phone);
-
-    // get products of customer
-    pgquery({
-        sql: findProductsByCustomer, params: [customer.id], doResult: function (result) {
-            //
-            //var products = [];
-            //var rows = result.rows;
-            //for (var i = 0; i < rows.length; i++) {
-            //    var _name = rows[i].name;
-            //    var _modals = rows[i].modals;
-            //    products
-            //    alert(JSON.stringify(rows[i]))
-            //}
-            var products = result.rows;
-            setProductSelect(products)
-
-            $.colorbox.close();
-        }
-    })
-}
-
-
-/*
-$('#example tbody').on( 'click', 'tr', function () {
-    if ( $(this).hasClass('selected') ) {
-        $(this).removeClass('selected');
-    }
-    else {
-        table.$('tr.selected').removeClass('selected');
-        $(this).addClass('selected');
-    }
-} );
-
-$('#button').click( function () {
-    table.row('.selected').remove().draw( false );
-} );
-*/
-
-
-/**/
-function fillAllCustomers() {
-    changeDataTable(["000000", "999999"]);
-}
-
-/*根据选择的地区更新用户列表表格的内容*/
-function changeDataTable(pcode) {
-    if (pcode instanceof Array) {
-        // 按pcode大小排序
-        pcode = pcode.sort();
-        console.log("Sorted pcodes: "+pcode);
-        changeData([pcode[0], pcode[pcode.length-1]]);
-    } else {
-        changeData([pcode, pcode]);
-    }
-}
-
-function changeData(params) {
-    pgquery({
-        sql: findCustomersByRegion, params: params, doResult: function (result) {
-            var tableData = [];
-            var rows = result.rows;
-            for (var i = 0; i < rows.length; i++) {
-                var _info = rows[i].customer_info;
-                var customer = {"DT_rowId":rows[i].id, "mc":_info.name, "jm":_info.simple_code,
-                    "dz":_info.address, "dh":_info.phone, "fzr":_info.principal/*, "kpzl":_info.kaipiaoziliao*/}
-                tableData.push(customer);
-            }
-            customerTable.clear();  //.draw()
-            customerTable.rows.add(tableData).draw();
-        }
-    })
-}
-
-
-
-
 
 
 
@@ -1015,8 +622,8 @@ function selectModal(src) {
     }
     for (var x in CURRENT_MODALS) {
         if (_modal_name == CURRENT_MODALS[x].name) {
-            $(src).parent().next().children().val(CURRENT_MODALS[x].unit);
-            var _suggest_price = CURRENT_MODALS[x].suggest_unit_price;
+            $(src).parent().next().children().val(CURRENT_MODALS[x].units);
+            var _suggest_price = CURRENT_MODALS[x].suggest_price;
             if (_suggest_price == null || _suggest_price >0) {
                 $(src).parent().next().next().next().children().val(_suggest_price);
             }

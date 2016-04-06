@@ -420,6 +420,12 @@
 
         const BrowserWindow = require('electron').remote.BrowserWindow;
         var win = BrowserWindow.getFocusedWindow();
+        var customer = getCustomerInfo();
+        if (customer == null) {
+            // do nothing.
+            return;
+        }
+
         win.emit('select_customer', customer);
         win.close();
         //window.close();
