@@ -43,6 +43,9 @@ var addSaleOrder = "insert into sale_order_json(order_number,customer_id, sale_d
 var findAllSaleOrder = "select data,order_number, customer_id, create_date from sale_order_json order by order_number desc limit $1 offset $2";  // limit 20 offset 0
 var countAllSaleOrder = "select count(*) as cnt from sale_order_json";
 
+var sql_add_order = "insert into orders(order_number, sale_date, customer, customer_info, create_user, create_user_info, products, total_num, total_sum) values($1,$2,$3,$4,$5,$6,$7,$8,$9)";
+var sql_find_order = "select order_number, customer,customer_info, create_user, create_user_info, sale_date, create_time, products, total_sum, total_num from orders where order_number = $1";
+var sql_find_all_orders = "select order_number, customer,customer_info, create_user, create_user_info, sale_date, create_time, products, total_sum, total_num from orders __condition__ order by order_number desc";
 
 var findSaleOrder = "select customer.name, customer.id, sale_order.order_number, sale_order.data from customer, sale_order_json sale_order where sale_order.customer_id = customer.id and order_number = $1";
 

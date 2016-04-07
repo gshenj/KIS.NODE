@@ -37,16 +37,8 @@ accounting.settings = {
     }
 };
 
-var modals = null;
-var p_win = null;
-var c_customer_id = null;
-var c_customer_name = null;
-var c_customer_address = null;
-var c_customer_phone = null;
-var c_customer_principal = null;
-var c_sale_date = null;
-var c_product_modals = null;
-var c_product_total_sum = null;
+//var modals = null;
+//var p_win = null;
 
 var user = ipcRenderer.sendSync('session', {opt: 'get', key: 'user'});
 
@@ -68,15 +60,150 @@ $(function () {
 
          } else*/
         if (target == '__list__') {
-            listOrders(15, 0)
+           // listOrders(15, 0)
+            loadOrdersTable()
         } else if (target=='__sys__') {
-            showSysManage();
+            //showSysManage();
         }
     });
 
     // 当前选项卡内容初始化
     initNewOrderPage();
 });
+
+var ordersTable = null;
+var table_click_attached = false;
+
+/**
+ * 显示表格 */
+function loadOrdersTable() {
+
+    if (ordersTable != null) {
+        ordersTable.destroy();
+        $('#orders_table').empty();
+        ordersTable = null;
+    }
+
+    ordersTable = $('#orders_table').DataTable({
+      //  "scrollY": 500,
+        "order": [[ 0, "desc" ]],
+        "dom": '<"DT_top"<"DT_condition"><"DT_search"f><"DT_clear">>ti',
+        "scrollCollapse": false,
+        "paging": false,
+        "data": [],
+        "rowId": 'DT_rowId',
+        "columnDefs": [
+            {
+                "render": function ( data, type, row ) {
+                    return '<a href="javascript:openPreviewSelect(\''+data+'\')">'+ data +'</a>';
+                },
+                "title": "出货单号",
+                "width": "10%",
+                "targets": [0],
+                "data": "dh"
+            },
+            {
+                "title": "送货日期",
+                "width": "10%",
+                "targets": [1],
+                "data": 'shrq'
+            },
+            {
+                "title": "客户",
+                "width": "25%",
+                "targets": [2],
+                "data": 'kh'
+            },
+            {
+                "orderable": false,
+                "title": "内容",
+                "width": "30%",
+                "targets": [3],
+                "data": 'nr'
+            },
+            {
+                "orderable": false,
+                "title": "制单人",
+                "width": "10%",
+                "targets": [4],
+                "data": 'dz'
+            },
+            {
+                "orderable": false,
+                "title": "录入时间",
+                "width": "15%",
+                "targets": [5],
+                "data": 'llsj'
+            }
+        ],
+        scroller: {
+            rowHeight: 20
+        },
+        "language": {
+            "url": "scripts/datatable/cn.json"
+        },
+        "initComplete": function (settings, json) {
+            var condition =  '<label style="margin-left:10px;">客户名称：</label><input onclick="" type="text" style="width:250px;" /><label style="margin-left:20px;" for="sale_date_begin">送货日期：</label>' +
+                '<input id="sale_date_begin" style="width:80px;" />'+
+                '<label for="sale_date_end">至</label>'+
+                '<input id="sale_date_end" style="width:80px;"  />'
+
+            $(".DT_condition").html(condition);
+            /*if (flag == 1) {
+                $('.opt-select').show();
+            } else if (flag == 2) {
+                $('.opt-manage').show();
+            }
+*/
+            findOrders();
+        //    fillAllCustomers();
+        }
+    });
+
+    if (table_click_attached) {
+        return;
+    }
+
+    /*
+    $('#orders_table tbody').on('click', 'tr', function () {
+        if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+        }
+        else {
+            ordersTable.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+        }
+    });
+    */
+
+    table_click_attached = false;
+}
+
+
+/**
+ * 选择出货单号，显示预览窗口。
+ * @param src
+ */
+function openPreviewSelect(orderNumber) {
+    pgquery({
+        sql: sql_find_order, params: [orderNumber], doResult: function (result) {
+            if (result.rows.length == 0) {
+                alert('error');
+                return;
+            }
+
+            var order_info = result.rows[0];
+            var order = {order_info: order_info, type: "select"}
+            ipcRenderer.sendSync('session', {opt: 'put', key: 'order', value: order});
+            openPreviewWindow();
+        }
+    });
+
+}
+
+
+
+
 
 
 function logout () {
@@ -91,7 +218,7 @@ function logout () {
     document.location.href = "login.html"
     // }
 }
-function findByOrderNumber(order_number) {
+/*function findByOrderNumber(order_number) {
     pgquery({
         sql: findSaleOrder, params: [order_number], doResult: function (result) {
             //console.log(result.rows)
@@ -112,14 +239,59 @@ function findByOrderNumber(order_number) {
             }
         }
     });
-}
+}*/
 /*var customerData = new Array();
 var customerInfo = new Array();*/
 
-function print_order() {
+
+
+function openPreviewWindow() {
+    const BrowserWindow = require('electron').remote.BrowserWindow;
+    var mainWin = BrowserWindow.getFocusedWindow();
+    var win = new BrowserWindow({width: 900, height: 600, show: false, resizable: false, autoHideMenuBar: true});
+    win.on('closed', function () {
+        win = null;
+        mainWin.setClosable(true);
+        mainWin.setResizable(true);
+        mainWin.setMinimizable(true);
+        mainWin.setMaximizable(true);
+        mainWin.setMovable(true);
+        $.colorbox.close()
+    });
+    mainWin.setClosable(false);
+    mainWin.setResizable(false);
+    mainWin.setMinimizable(false);
+    mainWin.setMaximizable(false);
+    mainWin.setMovable(false);
+
+    win.on('printed', function(data) {
+        if (data == 'create') {
+            // resetForm();
+            resetOrderForm()
+        }
+    });
+
+    $.colorbox({
+        inline: "#main_layout",
+        width: -1,
+        height: -1,
+        open: true,
+        speed: 0,
+        overlayClose: false,
+        escKey: false,
+        arrowKey: false
+    });
+
+    win.loadURL('file://' + __dirname + '/order-preview.html');
+    win.show();
+
+}
+
+
+function openPreviewCreate() {
     //window.print();
-    c_customer_id = $('#customer_id').val();
-    c_customer_name = $('#customer_name').val();
+    var c_customer_id = $('#customer_id').val();
+    var c_customer_name = $('#customer_name').val();
 
    /* for (var i = 0; i < customerData.length; i++) {
         var _children = customerData[i].children;
@@ -130,11 +302,11 @@ function print_order() {
             }
         }
     }*/
-    c_customer_address = $('#customer_address').val();
-    c_customer_principal = $('#customer_principal').val();
-    c_customer_phone = $('#customer_phone').val();
-    c_sale_date = $('#sale_date').val();
-    c_product_total_sum = $('#product_total_sum').html();
+    var c_customer_address = $('#customer_address').val();
+    var c_customer_principal = $('#customer_principal').val();
+    var c_customer_phone = $('#customer_phone').val();
+    var c_sale_date = $('#sale_date').val();
+    var c_product_total_sum = $('#product_total_sum').html();
     if (c_product_total_sum != '') {
         c_product_total_sum = accounting.unformat(c_product_total_sum)
     }
@@ -142,8 +314,9 @@ function print_order() {
 
 
 
-    c_product_modals = new Array();
+    var c_products = new Array();
     var _modals = $('.product_modal');
+    var total_num = 0;
     for (var i = 0; i < _modals.length; i++) {
         var modal = $(_modals[i]).val();
         if (modal == '') {
@@ -158,6 +331,7 @@ function print_order() {
         if (product_num == '') {
             continue;
         }
+        total_num += accounting.unformat(product_num);
 
         var product_units = $('tr[idx="' + idx + '"] .product_units').val();
         var product_unit_price = $('tr[idx="' + idx + '"] .product_unit_price').val();
@@ -165,14 +339,14 @@ function print_order() {
         var product_memo = $('tr[idx="' + idx + '"] .product_memo').val();
 
 
-        c_product_modals.push({
+        c_products.push({
+            // product_category_id: product_category_id,
+            product_name: product_name,
            // product_modal_id: modal,
-            product_modal_name: modal,
-           // product_category_id: product_category_id,
-            product_category_name: product_name,
-            product_units: product_units,
+            modal_name: modal,
+            modal_units: product_units,
             product_num: product_num,
-            product_unit_price: product_unit_price,
+            modal_price: product_unit_price,
             product_sum: product_sum,
             product_memo: product_memo
         })
@@ -180,71 +354,26 @@ function print_order() {
     }
 
 
+    /**
+     * 数据结构
+     */
     var order_info = {
-        customer_id: c_customer_id,
-        customer_name: c_customer_name,
-        customer_address: c_customer_address,
-        customer_principal: c_customer_principal,
-        customer_phone: c_customer_phone,
+        customer: c_customer_id,
+        customer_info:{
+            id: c_customer_id,
+            name: c_customer_name,
+            address: c_customer_address,
+            principal: c_customer_principal,
+            phone: c_customer_phone },
         sale_date: c_sale_date,
-        modals: c_product_modals,
-        create_user: user.name,
-        create_user_id: user.id,
-        product_total_sum: c_product_total_sum
+        products: c_products,
+        create_user_info:user,
+        create_user: user.id,
+        total_num:total_num,
+        total_sum: c_product_total_sum
     };
-
     var order = {order_info: order_info, type: "create"}
-
-    const BrowserWindow = require('electron').remote.BrowserWindow;
-    var mainWin = BrowserWindow.getFocusedWindow();
-
-    var win = new BrowserWindow({width: 900, height: 600, show: false, resizable: false, autoHideMenuBar: true});
-    win.on('closed', function () {
-        win = null;
-        mainWin.setClosable(true);
-        mainWin.setResizable(true);
-        mainWin.setMinimizable(true);
-        mainWin.setMaximizable(true);
-        mainWin.setMovable(true);
-        $.colorbox.close()
-    });
-
-    /*win.on('blur', function() {
-        win.focus();
-    })*/
-
-    win.on('printed', function(data) {
-        if (data == 'create') {
-            // resetForm();
-            resetOrderForm()
-        }
-    });
-
-
-
-    win.loadURL('file://' + __dirname + '/sale-order-preview.html?id=' + customer_id);
-    $.colorbox({
-        inline: "#main_layout",
-        width: -1,
-        height: -1,
-        open: true,
-        speed: 0,
-        overlayClose: false,
-        escKey: false,
-        arrowKey: false
-    });
-
-
-
-
-    mainWin.setClosable(false);
-    mainWin.setResizable(false);
-    mainWin.setMinimizable(false);
-    mainWin.setMaximizable(false);
-    mainWin.setMovable(false);
-
-
-    pgquery({
+    pgquery({//获取最后的order_number
         sql: getCurrentOrderNumber, params: [], doResult: function (result) {
             var curr_order_number =  result.rows[0].order_number;
             order.order_info.order_number = curr_order_number;
@@ -252,7 +381,7 @@ function print_order() {
             //console.log(JSON.stringify(order_info))
             ipcRenderer.sendSync('session', {opt: 'put', key: 'order', value: order});
 
-            win.show();
+            openPreviewWindow();
         }
     });
 
@@ -314,7 +443,7 @@ function clearTotalSum() {
     $('#product_total_sum').html('');
 }
 
-function change_modal(src) {
+/*function change_modal(src) {
     var _modal_id = $(src).val();
     var _idx = $(src).parent().parent().attr('idx');  // tr attr 'idx'
     if (_modal_id == 0 || _modal_id == '') {
@@ -368,7 +497,7 @@ function change_modal(src) {
     }
     // 重新计算金额
     changeNumOrUnitPrice(src);
-}
+}*/
 
 /*商品数量或者单价修改触发*/
 function changeNumOrUnitPrice(src) {
@@ -438,57 +567,6 @@ function setTotalSum() {
 }
 
 
-function listOrders(limit, offset) {
-    pgquery({
-        sql: countAllSaleOrder, params: [], doResult: function (result) {
-            var count = result.rows[0].cnt;
-            console.log("order size -> " + count);
-            pgquery({
-                sql: findAllSaleOrder, params: [limit, offset], doResult: function (result1) {
-                    showRows(result1.rows);
-                }
-            });
-        }
-    });
-}
-
-function showRows(rows) {
-    //遍历结果显示表格
-    //清空现有的行
-    $('#list_table tbody').empty();
-
-    //todo
-    for (var i = 0; i < rows.length; i++) {
-        var s = '<tr>';
-        s += '<td><a href="#" onclick="findByOrderNumber('+rows[i].order_number+')">' + rows[i].order_number + '</a></td>';
-        s += '<td>' + rows[i].data.sale_date + '</td>'
-        s += '<td>' + rows[i].data.customer_name + '</td>'
-        s += '<td>' + showModalText(rows[i].data.modals) + '</td>'
-        s += ' <td>' + rows[i].data.create_user + '</td>'
-        s += '<td>' + rows[i].create_date.Format("yyyy-MM-dd hh:mm") + '</td>'
-        s += '</tr>';
-        $(s).appendTo('#list_table tbody');
-        //console.log(s)
-        // $('#list_table').append(s)
-    }
-}
-
-function showModalText(modals) {
-    var r = "";
-    if (modals.length>0) {
-        var modal0 = modals[0];
-        r = modal0.product_modal_name +","+modal0.product_category_name+","+
-        modal0.product_num + modal0.product_units
-
-        if (modals.length>1) {
-            r +="   ..."
-        }
-    }
-
-    return r;
-}
-
-
 /**
  *
  */
@@ -507,7 +585,7 @@ function initNewOrderPage() {
         //const BrowserWindow = require('electron').BrowserWindow;
         $.colorbox({inline:"#main_layout", width:-1, height:-1, open:true, speed:0,overlayClose:false,escKey:false,arrowKey:false});
 
-        var win = new BrowserWindow({ width: 1200, height: 700, show: false, resizable:false,autoHideMenuBar:true,acceptFirstMouse:true });
+        var win = new BrowserWindow({ title:'选择客户', width: 1200, height: 700, show: false, resizable:false,autoHideMenuBar:true,acceptFirstMouse:true });
         win.on('select_customer', function(customer) {
             console.log("Get customer => "+JSON.stringify(customer));
             // 获取到客户数据
@@ -558,13 +636,101 @@ function resetOrderForm() {
     var win = BrowserWindow.getFocusedWindow();
     win.reload();
     */
-
     $('input').val('');
     $('select').html('<option></option>')
     clearTotalSum();
 
 }
 
+/**
+ * 根据条件查询订单，并显示在表格上。
+ * @param conditions
+ */
+function findOrders(conditions) {
+    var sql = sql_find_all_orders;
+    var parameters = [];
+    if (conditions != null) {
+        sql = sql.replace('__condition__', conditions.text)   // text: where $1 , params:[]
+        parameters = conditions.params;
+    }
+    pgquery({
+        sql: sql, params: parameters, doResult: function (result) {
+            //showRows(result1.rows);
+            var tableData = [];
+            var rows = result.rows;
+
+            for (var i = 0; i < rows.length; i++) {
+                var productArr = rows[i].products;
+                /*var nr = "";
+                 for (var j in productArr) {
+                 nr += "[" + productArr[j].product_name + ", "+productArr[j].modal_name +", " + productArr[j].product_num + productArr[j].modal_units +"]"
+                 }*/
+                var nr = productArr[0].product_name + ", "+productArr[0].modal_name +", " + productArr[0].product_num + productArr[0].modal_units +" ...";
+                var orderInfo = {
+                    "DT_rowId": rows[i].order_number, "dh":rows[i].order_number, "shrq":rows[i].sale_date, "kh": rows[i].customer_info.name,
+                    "dz": rows[i].create_user_info.name, "llsj": rows[i].create_time.Format("yyyy-MM-dd hh:mm"), "nr": nr
+                }
+                tableData.push(orderInfo);
+            }
+            ordersTable.clear();  //.draw()
+            console.log(tableData)
+            ordersTable.rows.add(tableData).draw();
+        }
+    });
+}
+/*
+ function listOrders(limit, offset) {
+ pgquery({
+ sql: countAllSaleOrder, params: [], doResult: function (result) {
+ var count = result.rows[0].cnt;
+ console.log("order size -> " + count);
+ pgquery({
+ sql: findAllSaleOrder, params: [limit, offset], doResult: function (result1) {
+ showRows(result1.rows);
+ }
+ });
+ }
+ });
+ }*/
+/*
+
+ function showRows(rows) {
+ //遍历结果显示表格
+ //清空现有的行
+ $('#list_table tbody').empty();
+
+ //todo
+ for (var i = 0; i < rows.length; i++) {
+ var s = '<tr>';
+ s += '<td><a href="#" onclick="findByOrderNumber('+rows[i].order_number+')">' + rows[i].order_number + '</a></td>';
+ s += '<td>' + rows[i].data.sale_date + '</td>'
+ s += '<td>' + rows[i].data.customer_name + '</td>'
+ s += '<td>' + showModalText(rows[i].data.modals) + '</td>'
+ s += ' <td>' + rows[i].data.create_user + '</td>'
+ s += '<td>' + rows[i].create_date.Format("yyyy-MM-dd hh:mm") + '</td>'
+ s += '</tr>';
+ $(s).appendTo('#list_table tbody');
+ //console.log(s)
+ // $('#list_table').append(s)
+ }
+ }
+
+ function showModalText(modals) {
+ var r = "";
+ if (modals.length>0) {
+ var modal0 = modals[0];
+ r = modal0.product_modal_name +","+modal0.product_category_name+","+
+ modal0.product_num + modal0.product_units
+
+ if (modals.length>1) {
+ r +="   ..."
+ }
+ }
+
+ return r;
+ }
+
+ */
 
 
 /********************************************************订单内容部分处理**********************************************/
@@ -630,5 +796,69 @@ function selectModal(src) {
             break;
         }
     }
+}
+
+function gotoRegionManage() {
+
+    const BrowserWindow = require('electron').remote.BrowserWindow;
+    var mainWin =  BrowserWindow.getFocusedWindow()
+
+    $.colorbox({inline:"#main_layout", width:-1, height:-1, open:true, speed:0,overlayClose:false,escKey:false,arrowKey:false});
+
+
+    var win = new BrowserWindow({ width: 1200, height: 700, show: false, resizable:false,autoHideMenuBar:true });
+    win.on('closed', function() {
+        win = null;
+        mainWin.setClosable(true);
+        mainWin.setResizable(true);
+        mainWin.setMinimizable(true);
+        mainWin.setMaximizable(true);
+        mainWin.setMovable(true);
+        $.colorbox.close()
+    });
+    //win.on('blur', function(){
+    //    win.focus();
+    //})
+    win.loadURL('file://' + __dirname + '/sys_manage/region-manage.html');
+    win.show();
+
+    mainWin.setClosable(false);
+    mainWin.setResizable(false);
+    mainWin.setMinimizable(false);
+    mainWin.setMaximizable(false);
+    mainWin.setMovable(false);
+}
+
+
+function gotoCustomerManage() {
+
+    const BrowserWindow = require('electron').remote.BrowserWindow;
+    var mainWin =  BrowserWindow.getFocusedWindow()
+    // In the main process.
+    //const BrowserWindow = require('electron').BrowserWindow;
+    $.colorbox({inline:"#main_layout", width:-1, height:-1, open:true, speed:0,overlayClose:false,escKey:false,arrowKey:false});
+
+    var win = new BrowserWindow({title:'管理客户', width: 1200, height: 700, show: false, resizable:false,autoHideMenuBar:true,acceptFirstMouse:true });
+    win.on('select_customer', function(customer) {
+        alert(customer)
+    });
+
+    win.on('closed', function() {
+        win = null;
+        mainWin.setClosable(true);
+        mainWin.setResizable(true);
+        mainWin.setMinimizable(true);
+        mainWin.setMaximizable(true);
+        mainWin.setMovable(true);
+        $.colorbox.close()
+    });
+
+    win.loadURL('file://' + __dirname + '/sys_manage/customer-manage.html?flag=2');
+    win.show();
+    mainWin.setClosable(false);
+    mainWin.setResizable(false);
+    mainWin.setMinimizable(false);
+    mainWin.setMaximizable(false);
+    mainWin.setMovable(false);
 }
 

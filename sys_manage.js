@@ -38,7 +38,7 @@ function gotoCustomerManage() {
     //const BrowserWindow = require('electron').BrowserWindow;
     $.colorbox({inline:"#main_layout", width:-1, height:-1, open:true, speed:0,overlayClose:false,escKey:false,arrowKey:false});
 
-    var win = new BrowserWindow({ width: 1200, height: 700, show: false, resizable:false,autoHideMenuBar:true,acceptFirstMouse:true });
+    var win = new BrowserWindow({title:'管理客户', width: 1200, height: 700, show: false, resizable:false,autoHideMenuBar:true,acceptFirstMouse:true });
     win.on('select_customer', function(customer) {
         alert(customer)
     });

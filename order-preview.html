@@ -41,9 +41,7 @@
         const BrowserWindow = require('electron').remote.BrowserWindow;
         var mainWin = BrowserWindow.getFocusedWindow();
 
-
         $(function () {
-
             for (var i = 2; i <= 5; i++) {
                 var tr = $('tr[idx="1"]').clone();
                 $(tr).attr("idx", i);
@@ -51,43 +49,45 @@
             }
 
             $('#order_number').html(order_info.order_number);
-            $('#customer_name').html(order_info.customer_name);
-            $('#customer_address').html(order_info.customer_address);
-            $('#customer_phone').html(order_info.customer_phone);
-            $('#customer_principal').html(order_info.customer_principal);
+            $('#customer_name').html(order_info.customer_info.name);
+            $('#customer_address').html(order_info.customer_info.address);
+            $('#customer_phone').html(order_info.customer_info.phone);
+            $('#customer_principal').html(order_info.customer_info.principal);
             $("#sale_date").html(order_info.sale_date);
-            $('#create_user').html(order_info.create_user)
+            $('#create_user').html(order_info.create_user_info.name)
 
-            var modals = order_info.modals;
+            var products = order_info.products;
 
-            for (var i = 0; i < modals.length; i++) {
+            for (var i = 0; i < products.length; i++) {
 
-                $('tr[idx="' + (i + 1) + '"] .product_modal').html(modals[i].product_modal_name);
-                $('tr[idx="' + (i + 1) + '"] .product_category').html(modals[i].product_category_name);
-                $('tr[idx="' + (i + 1) + '"] .product_units').html(modals[i].product_units);
-                $('tr[idx="' + (i + 1) + '"] .product_num').html(modals[i].product_num);
-                var _unit_price = modals[i].product_unit_price;
+                $('tr[idx="' + (i + 1) + '"] .product_modal').html(products[i].modal_name);
+                $('tr[idx="' + (i + 1) + '"] .product_category').html(products[i].product_name);
+                $('tr[idx="' + (i + 1) + '"] .product_units').html(products[i].modal_units);
+                $('tr[idx="' + (i + 1) + '"] .product_num').html(products[i].product_num);
+                var _unit_price = products[i].modal_price;
                 if (_unit_price != '') {
-                    _unit_price = accounting.formatNumber(_unit_price,2)
+                    _unit_price = accounting.formatNumber(_unit_price, 2)
                 }
                 $('tr[idx="' + (i + 1) + '"] .product_unit_price').html(_unit_price);
-                var _sum = modals[i].product_sum;
+                var _sum = products[i].product_sum;
                 if (_sum != '') {
-                    _sum = accounting.formatNumber(_sum,2);
+                    _sum = accounting.formatNumber(_sum, 2);
                 }
                 $('tr[idx="' + (i + 1) + '"] .product_sum').html(_sum);
 
-                $('tr[idx="' + (i + 1) + '"] .product_memo').html(modals[i].product_memo);
+                $('tr[idx="' + (i + 1) + '"] .product_memo').html(products[i].product_memo);
             }
 
-            var _total_sum = order_info.product_total_sum;
+            var _total_sum = order_info.total_sum;
             if (_total_sum != '') {
 
                 _total_sum = accounting.formatMoney(_total_sum);
             }
             $("#product_total_sum").html(_total_sum);
 
-            $(".btn-print").bind('click', function(){doPrint(this)})
+            $(".btn-print").bind('click', function () {
+                doPrint(this)
+            })
         });
 
 
@@ -95,11 +95,19 @@
 
             if (type == "create") {
                 // 保存并打印
-                $(src).attr("disabled","disabled");
-               // $(src).html('正在保存...')
+                $(src).attr("disabled", "disabled");
+                // $(src).html('正在保存...')
                 pgquery({
-                    sql: addSaleOrder,
-                    params: [order_info.order_number, order_info.customer_id, order_info.sale_date, order_info],
+                    sql: sql_add_order,
+                    params: [order_info.order_number,
+                        order_info.sale_date,
+                        order_info.customer,
+                        order_info.customer_info,
+                        order_info.create_user,
+                        order_info.create_user_info,
+                        order_info.products,
+                        order_info.total_num,
+                        order_info.total_sum],
                     doResult: function (result) {
                         console.log(JSON.stringify(result))
                         //$(src).html('保存成功，开始打印...');
@@ -168,7 +176,7 @@
             vertical-align: middle;
             text-align: center;
             font-weight: normal;
-            border: 1px dotted  #aaa;
+            border: 1px dotted #aaa;
             height: 22pt;
         }
 
@@ -177,7 +185,7 @@
             padding: 0pt 6pt;
             height: 18pt;
             vertical-align: middle;
-            border: 1px dotted  #aaa;
+            border: 1px dotted #aaa;
             /*background-color:#eee;*/
         }
     </style>
@@ -247,24 +255,24 @@
         </table>
     </div>
     <table class="bill_product_table" style="width:100%;">
-        <tr class="tbh">
-            <th width="17%">规格型号</th>
+        <tr class="tbh" style="font-style:italic; font-size:12pt;">
             <th width="14%">货物名称</th>
+            <th width="17%">规格型号</th>
             <th width="8%">单位</th>
             <th width="10%">数量</th>
             <th width="10%">价格</th>
             <th width="12%">金额</th>
             <th width="18%">备注</th>
             <th rowspan="6" width="11%" style="border:none; font-weight:normal; padding:0;">
-                <div style="margin:0pt 0pt;">说明：</br>白联:存根<br/>红联:客户</br>黄联:结算</div>
+                <div style="margin:0pt 0pt; font-size:11pt;">说明：</br>白联:存根<br/>红联:客户</br>黄联:结算</div>
             </th>
         </tr>
         <tr idx="1">
             <td style="text-align:center;">
-                <span class="product_modal"></span>
+                <span class="product_category"></span>
             </td>
             <td style="text-align:center;">
-                <span class="product_category"></span>
+                <span class="product_modal"></span>
             </td>
             <td style="text-align:center;">
                 <span class="product_units"></span>
@@ -304,7 +312,7 @@
 
     <button class="btn btn-default btn-primary" type="submit" onclick="window.close()">关 闭</button>
 
-    <button  class="btn btn-default btn-primary noprint btn-print" style="margin-left:150px;">保存&打印</button>
+    <button class="btn btn-default btn-primary noprint btn-print" style="margin-left:150px;">保存&打印</button>
 
 </div>
 

@@ -17,22 +17,22 @@
 
     <script src="scripts/pgquery.js"></script>
     <script src="scripts/jquery-ui/jquery-ui.js"></script>
-    <script src="scripts/select2.full.min.js"></script>
+    <!--<script src="scripts/select2.full.min.js"></script>-->
     <script src="scripts/accounting.min.js"></script>
     <script src="scripts/bootstrap/js/bootstrap.js"></script>
     <script src="scripts/dateformat.js"></script>
-    <script src="scripts/dbutils.js"></script>
+    <!--<script src="scripts/dbutils.js"></script>-->
     <script src="scripts/jquery.colorbox-min.js"></script>
     <script src="scripts/jquery.ztree.all.js"></script>
     <script src="scripts/datatable/js/jquery.dataTables.js"></script>
 
-    <script src="sys_manage.js"></script>
-    <script src="sale-order.js"></script>
+    <!--<script src="sys_manage.js"></script>-->
+    <script src="kis.js"></script>
 
     <!-- Le styles -->
     <!-- Bootstrap -->
     <link href="scripts/jquery-ui/jquery-ui.css" rel="stylesheet">
-    <link href="styles/select2.min.css" rel="stylesheet">
+    <!--<link href="styles/select2.min.css" rel="stylesheet">-->
     <link href="styles/zTreeStyle/zTreeStyle.css" rel="stylesheet">
     <link href="scripts/bootstrap/css/bootstrap.css" rel="stylesheet">
     <link href="scripts/datatable/css/jquery.dataTables.css" rel="stylesheet">
@@ -58,6 +58,13 @@
         .ztree li span.button.switch.level0 {visibility:hidden; width:1px;}
         .ztree li ul.level0 {padding:0; background:none;}
 
+        .DT_top {background-color:#9acfea;}
+
+        .DT_condition {float:left; width:900px; /*margin-left:18px; */ padding:8px 4px}
+
+        .DT_search {float:right; width:300px; /*background-color:#9acfea;*/ padding:8px 0px}
+        .DT_clear {clear:both; height:1px;}
+        .DT_search input {}
 
         .product_name, .product_modal{font-size:16px; color:black; }
     </style>
@@ -222,13 +229,13 @@
     </table>
     <div style="text-align:center; margin-top:40px;">
         <button class="btn btn-default btn-primary btn-lg" type="button" onclick="resetOrderForm()"> 重  填 </button>
-        <button class="btn btn-default btn-success btn-lg" style="margin-left:150px;" onclick="print_order()"> 打  印 </button>
+        <button class="btn btn-default btn-success btn-lg" style="margin-left:150px;" onclick="openPreviewCreate()"> 打  印 </button>
     </div>
 </div>
 
 <!--/**container __list__****************************************************/-->
 <div id="__list__" class="container" style="display:none;">
-    <div style="margin-top:10pt;">
+<!--    <div style="margin-top:10pt;">
         <div style="float:left; margin-left:2pt;">
         <label for="customer_name_1">客户名称：</label>
         <select id="customer_name_1" style="width:280px; ">
@@ -245,8 +252,12 @@
             <button>查询</button>
         </div>
     </div>
-    <div  style="clear:both; height:10pt;"></div>
-    <table id="list_table" class="table table-condensed table-hover table-bordered">
+    <div  style="clear:both; height:10pt;">
+
+    </div>-->
+    <table id="orders_table" class="display" cellspacing="0" width="100%">
+    </table>
+    <!--<table id="list_table" class="table table-condensed table-hover table-bordered">
         <thead>
         <tr>
             <th width="10%">出货单号</th>
@@ -260,7 +271,7 @@
         <tbody>
 
         </tbody>
-    </table>
+    </table>-->
 
 </div>
 
