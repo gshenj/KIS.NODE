@@ -85,7 +85,7 @@
         }
 
         pgquery({
-            sql: findRegions, params: [], doResult: function (result) {
+            sql: sql_find_regions, params: [], doResult: function (result) {
                 var zNodes = new Array();
                 var rows = result.rows;
                 for (var i = 0; i < rows.length; i++) {

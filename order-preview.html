@@ -39,7 +39,7 @@
         var printed = false;
 
         const BrowserWindow = require('electron').remote.BrowserWindow;
-        var mainWin = BrowserWindow.getFocusedWindow();
+        var thisWin = BrowserWindow.getFocusedWindow();
 
         $(function () {
             for (var i = 2; i <= 5; i++) {
@@ -114,14 +114,14 @@
 
                         window.print();
                         printed = true;
-                        mainWin.emit('printed', type)
+                        thisWin.emit('printed', type)
                     }
                 });
 
             } else if (type == "select") {
                 // 已经存在的选择打印
                 window.print();
-                mainWin.emit('printed', type)
+                thisWin.emit('printed', type)
             }
         }
 

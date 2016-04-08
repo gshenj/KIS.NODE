@@ -2,18 +2,12 @@
 <html lang="zh_CN">
 <head>
     <meta charset="UTF-8">
-    <script>
-        jQuery = require('jquery')
-        $ = jQuery;
-    </script>
-
     <script src="../scripts/pgquery.js"></script>
 
     <script src="../scripts/bootstrap/js/bootstrap.js"></script>
     <script src="../scripts/jquery.ztree.all.js"></script>
     <script src="../scripts/jquery.colorbox-min.js"></script>
     <script src="../scripts/datatable/js/jquery.dataTables.js"></script>
-
 
     <link href="../scripts/bootstrap/css/bootstrap.css" rel="stylesheet">
     <link href="data:text/css;charset=utf-8," data-href="../scripts/bootstrap/css/bootstrap-theme.css" rel="stylesheet">
@@ -26,11 +20,9 @@
     <style>
 
         #list_table thead th {
-
             text-align: center;
             font-weight: bold;
             background-color: #eee;
-
         }
 
         /* 根节点冻结  */
@@ -57,10 +49,9 @@
             display: none;
         }
 
-        /*table.dataTable tbody tr.selected {background-color:#5bb75b}*/
     </style>
-
 </head>
+
 <body style="text-align: center;">
 <div style="margin:20px auto 0px; text-align: left; width:1180px">
     <div style="float:left; margin-left:4px; width:200px; background-color:#eee; border:1px solid #ccc; height:600px"
@@ -73,25 +64,6 @@
             </table>
         </div>
     </div>
-    <!--  <div id="customer_info_opt_div"
-           style="float:left; text-align:left; margin-left:8px; width:200px; height:100%; border:1px solid #AAAAAA; padding:20px 5px">
-          <div style="margin-top:0px;">名称：</div>
-          <div><input type="text" name="c_name" style="width:100%;"/><input type="hidden" name="id"/></div>
-          <div style="margin-top:10px;">简码：</div>
-          <div><input type="text" name="c_simple_code" style="width:100%;"/></div>
-          <div style="margin-top:10px;">电话：</div>
-          <div><input type="text" name="c_phone" style="width:100%;"/></div>
-          <div style="margin-top:10px;">负责人：</div>
-          <div><input type="text" name="c_principal" style="width:100%;"/></div>
-          <div style="margin-top:10px;">地址：</div>
-          <div><input type="text" name="c_address" style="width:100%;"/></div>
-
-          <div style=" margin:30px 0; text-align:center;">
-              <button>保存</button>
-              <button>添加</button>
-              <button>删除</button>
-          </div>
-      </div>-->
 </div>
 
 
@@ -149,7 +121,7 @@
         }
 
         pgquery({
-            sql: findRegions, params: [], doResult: function (result) {
+            sql: sql_find_regions, params: [], doResult: function (result) {
                 var zNodes = new Array();
                 var rows = result.rows;
                 for (var i = 0; i < rows.length; i++) {
@@ -175,12 +147,15 @@
 
     /*地区点击响应函数*/
     function zTreeOnClick(event, treeId, treeNode) {
-        if (treeNode.pcode == '') {
+        showCustomer(treeNode);
+    }
+
+    function showCustomer(treeNode) {
+        if (treeNode == null || treeNode.pcode == '') {
             // root node
             fillAllCustomers();
             return;
         }
-
 
         if (treeNode.isParent) {
             var pcodeArray = [];
@@ -191,7 +166,6 @@
         } else {
             changeDataTable(treeNode.pcode)
         }
-
     }
 
 
@@ -216,7 +190,7 @@
 
     function changeData(params) {
         pgquery({
-            sql: findCustomersByRegion, params: params, doResult: function (result) {
+            sql: sql_find_customers_by_region, params: params, doResult: function (result) {
                 var tableData = [];
                 var rows = result.rows;
                 for (var i = 0; i < rows.length; i++) {
@@ -249,36 +223,42 @@
             "paging": false,
             "data": [],
             "rowId": 'DT_rowId',
+            "ordering": false,
             "columnDefs": [
                 {
                     "title": "名称",
                     "width": "30%",
                     "targets": [0],
-                    "data": "mc"
+                    "data": "mc",
+                    "orderable": false,
                 },
                 {
                     "title": "简码",
                     "width": "10%",
                     "targets": [1],
-                    "data": 'jm'
+                    "data": 'jm',
+                    "orderable": false
                 },
                 {
                     "title": "电话",
                     "width": "10%",
                     "targets": [2],
-                    "data": 'dh'
+                    "data": 'dh',
+                    "orderable": false
                 },
                 {
                     "title": "负责人",
                     "width": "10%",
                     "targets": [3],
-                    "data": 'fzr'
+                    "data": 'fzr',
+                    "orderable": false
                 },
                 {
                     "title": "地址",
                     "width": "30%",
                     "targets": [4],
-                    "data": 'dz'
+                    "data": 'dz',
+                    "orderable": false
                 }
             ],
             scroller: {
@@ -314,45 +294,7 @@
                 $(this).addClass('selected');
             }
         });
-        /*$('#customer_opt_table tbody').on('click', 'tr', function () {
-         var rowId = customerTable.row(this).id();
-         var data = customerTable.row( this ).data();
 
-         var customer = {id:rowId, name:data.mc, address:data.dz, phone:data.dh, principal:data.fzr }
-         console.log("Selected customer: "+JSON.stringify(customer))
-         if ($('#customer_name').val() == customer.name) {
-         console.log("Customer name not changed!")
-         /!*没有重新选择客户，直接关闭弹出框*!/
-         $.colorbox.close();
-         return;
-         }
-
-
-         $('#customer_id').val(customer.id);
-         $('#customer_name').val(customer.name);
-         $('#customer_address').val(customer.address);
-         $('#customer_principal').val(customer.principal);
-         $('#customer_phone').val(customer.phone);
-
-         // get products of customer
-         pgquery({
-         sql: findProductsByCustomer, params: [customer.id], doResult: function (result) {
-         //
-         //var products = [];
-         //var rows = result.rows;
-         //for (var i = 0; i < rows.length; i++) {
-         //    var _name = rows[i].name;
-         //    var _modals = rows[i].modals;
-         //    products
-         //    alert(JSON.stringify(rows[i]))
-         //}
-         var products = result.rows;
-         setProductSelect(products)
-
-         $.colorbox.close();
-         }
-         })
-         });*/
         table_click_attached = false;
     }
 
@@ -362,26 +304,11 @@
      * 2: 添加修改客户
      * */
     var flag = getUrlParam('flag');
-    console.log("Select customer window with flag " + flag + ".");
 
-    function getUrlParam(name) {
-        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
-        var r = window.location.search.substr(1).match(reg); //匹配目标参数
-        if (r != null) return unescape(r[2]);
-        return null; //返回参数值
-    }
-
-
-    function manageProducts() {
-        var customer = getCustomerInfo();
-        if (customer == null) {
-            // alert('请选择客户!')
-            return;
-        }
-        var customer_id = (customer == null) ? 0 : customer.id;
+    function openChildWindow(title, url, onRefresh) {
         const BrowserWindow = require('electron').remote.BrowserWindow;
-        var mainWin = BrowserWindow.getFocusedWindow()
-        var win = new BrowserWindow({width: 900, height: 600, show: false, resizable: false, autoHideMenuBar: true});
+        var mainWin = BrowserWindow.getFocusedWindow();
+        var win = new BrowserWindow({title:title, width: 900, height: 600, show: false, resizable: false, autoHideMenuBar: true});
         win.on('closed', function () {
             win = null;
             mainWin.setClosable(true);
@@ -391,7 +318,9 @@
             mainWin.setMovable(true);
             $.colorbox.close()
         });
-        win.loadURL('file://' + __dirname + '/customer_products.html?id=' + customer_id);
+        win.on('refresh', onRefresh);
+
+        win.loadURL(url);
         $.colorbox({
             inline: "#win_overlay",
             width: -1,
@@ -402,21 +331,33 @@
             escKey: false,
             arrowKey: false
         });
-
-
-        win.show();
-
         mainWin.setClosable(false);
         mainWin.setResizable(false);
         mainWin.setMinimizable(false);
         mainWin.setMaximizable(false);
         mainWin.setMovable(false);
-
+        win.show();
     }
 
+    function manageProducts() {
+        var customer = getCustomerInfo();
+        if (customer == null) {
+            alert('请选择客户!')
+            return;
+        }
+        var customer_id = (customer == null) ? 0 : customer.id;
+        openChildWindow('产品管理',
+                'file://' + __dirname + '/customer_products.html?id=' + customer_id,
+                function() {
+                    var nodes = regionTreeObj.getSelectedNodes();
+                    if (nodes.length == 0)
+                        showCustomer(null);
+                    else
+                        showCustomer(nodes[0])
+                })
+    }
 
     function doneSelectCustomer() {
-
         const BrowserWindow = require('electron').remote.BrowserWindow;
         var win = BrowserWindow.getFocusedWindow();
         var customer = getCustomerInfo();
@@ -427,79 +368,66 @@
 
         win.emit('select_customer', customer);
         win.close();
-        //window.close();
-
     }
 
+
     function manageCustomer(type) {
+        var title = '';
+        if (type == 1) {
+            title = '新增客户';
+        } else if (type == 2) {
+            title = '删除客户'
+        } else if (type == 3) {
+            title = '修改客户'
+        }
+
+        var pcode = '';
+        if (type == 1) {
+            // 新增客户，需要选择地区
+            var nodes = regionTreeObj.getSelectedNodes();
+            if (nodes.length != 1 || nodes[0].isParent) {
+                alert('请选择区域！')
+                return;
+            }
+
+            pcode = nodes[0].pcode
+        }
 
         var customer = getCustomerInfo();
         if (customer == null && type != 1) {
-            // alert('请选择客户！')
+            alert('请选择客户！')
             return ;
         }
         var customer_id = (customer == null) ? 0 : customer.id;
-        const BrowserWindow = require('electron').remote.BrowserWindow;
+        openChildWindow(title,
+                'file://' + __dirname + '/customer_info.html?id=' + customer_id + "&type=" + type+"&pcode="+pcode,
+                function() {
+                        var nodes = regionTreeObj.getSelectedNodes();
+                        if (nodes.length == 0)
+                            showCustomer(null);
+                        else
+                            showCustomer(nodes[0])
 
-        // manage customer
-        var mainWin = BrowserWindow.getFocusedWindow()
-        var win = new BrowserWindow({width: 900, height: 600, show: false, resizable: false, autoHideMenuBar: true});
-        win.on('closed', function () {
-            win = null;
-            mainWin.setClosable(true);
-            mainWin.setResizable(true);
-            mainWin.setMinimizable(true);
-            mainWin.setMaximizable(true);
-            mainWin.setMovable(true);
-            $.colorbox.close()
-        });
-
-        win.loadURL('file://' + __dirname + '/customer_info.html?id=' + customer_id + "&type=" + type);
-        $.colorbox({
-            inline: "#win_overlay",
-            width: -1,
-            height: -1,
-            open: true,
-            speed: 0,
-            overlayClose: false,
-            escKey: false,
-            arrowKey: false
-        });
-
-
-        win.show();
-
-        mainWin.setClosable(false);
-        mainWin.setResizable(false);
-        mainWin.setMinimizable(false);
-        mainWin.setMaximizable(false);
-        mainWin.setMovable(false);
+                }
+        )
 
     }
 
     function getCustomerInfo() {
         var rowId = customerOptTable.row('.selected').id();
-
         if (rowId == undefined) {
             return null;
         }
-
-        console.log("rowId: "+rowId)
-
         var data = customerOptTable.row('.selected').data();
-
         var customer = {id: rowId, name: data.mc, address: data.dz, phone: data.dh, principal: data.fzr}
-        console.log("Selected customer: " + JSON.stringify(customer))
-
         return customer;
     }
+
 
 
     $(function () {
         initTreeMenu();
         initCustomerOptTable();
-
-
     });
 </script>
 </body>

@@ -104,12 +104,6 @@
 
 <script>
 
-    function getUrlParam(name) {
-        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
-        var r = window.location.search.substr(1).match(reg); //匹配目标参数
-        if (r != null) return unescape(r[2]); return null; //返回参数值
-    }
-
     var customer_id  = getUrlParam('id');
     // [{"name":'pp', modals:[{"name":"1A",
     var product_array = [];
@@ -314,7 +308,7 @@
     function loadProductsData(callbacks) {
         product_array = []
         pgquery({
-            sql: findProductsByCustomer, params: [customer_id], doResult: function (result) {
+            sql: sql_find_products_by_customer, params: [customer_id], doResult: function (result) {
                 var rows = result.rows;
                 if (rows.length > 0) {
                     for (var i = 0; i < rows.length; i++) {

@@ -43,7 +43,6 @@ accounting.settings = {
 var user = ipcRenderer.sendSync('session', {opt: 'get', key: 'user'});
 
 
-
 $(function () {
     //console.log('Login user: ' + user.name);
 
@@ -55,14 +54,13 @@ $(function () {
         $(this).parent().addClass("active")
 
 
-
         /*if (target == '__new__') {
 
          } else*/
         if (target == '__list__') {
-           // listOrders(15, 0)
+            // listOrders(15, 0)
             loadOrdersTable()
-        } else if (target=='__sys__') {
+        } else if (target == '__sys__') {
             //showSysManage();
         }
     });
@@ -85,8 +83,8 @@ function loadOrdersTable() {
     }
 
     ordersTable = $('#orders_table').DataTable({
-      //  "scrollY": 500,
-        "order": [[ 0, "desc" ]],
+        //  "scrollY": 500,
+        "order": [[0, "desc"]],
         "dom": '<"DT_top"<"DT_condition"><"DT_search"f><"DT_clear">>ti',
         "scrollCollapse": false,
         "paging": false,
@@ -94,8 +92,8 @@ function loadOrdersTable() {
         "rowId": 'DT_rowId',
         "columnDefs": [
             {
-                "render": function ( data, type, row ) {
-                    return '<a href="javascript:openPreviewSelect(\''+data+'\')">'+ data +'</a>';
+                "render": function (data, type, row) {
+                    return '<a href="javascript:openPreviewSelect(\'' + data + '\')">' + data + '</a>';
                 },
                 "title": "出货单号",
                 "width": "10%",
@@ -143,20 +141,23 @@ function loadOrdersTable() {
             "url": "scripts/datatable/cn.json"
         },
         "initComplete": function (settings, json) {
-            var condition =  '<label style="margin-left:10px;">客户名称：</label><input onclick="" type="text" style="width:250px;" /><label style="margin-left:20px;" for="sale_date_begin">送货日期：</label>' +
-                '<input id="sale_date_begin" style="width:80px;" />'+
-                '<label for="sale_date_end">至</label>'+
-                '<input id="sale_date_end" style="width:80px;"  />'
+            var condition = '<label style="margin-left:10px;">客户名称：</label><input id="search_customer" customer_id="" onclick="openCustomerWindowInList()" type="text" style="width:300px;" /><label style="margin-left:20px;" for="sale_date_begin">送货日期：</label>' +
+                '<input id="sale_date_begin" onchange="findOrders()" style="width:120px;" />' +
+                '<label for="sale_date_end">至</label>' +
+                '<input id="sale_date_end" onchange="findOrders()" style="width:120px;"  />'
 
             $(".DT_condition").html(condition);
+            $("#sale_date_begin").datepicker(datepicker_options);
+            $("#sale_date_end").datepicker(datepicker_options);
             /*if (flag == 1) {
-                $('.opt-select').show();
-            } else if (flag == 2) {
-                $('.opt-manage').show();
-            }
-*/
+             $('.opt-select').show();
+             } else if (flag == 2) {
+             $('.opt-manage').show();
+             }*/
+
+
             findOrders();
-        //    fillAllCustomers();
+            //    fillAllCustomers();
         }
     });
 
@@ -165,16 +166,16 @@ function loadOrdersTable() {
     }
 
     /*
-    $('#orders_table tbody').on('click', 'tr', function () {
-        if ($(this).hasClass('selected')) {
-            $(this).removeClass('selected');
-        }
-        else {
-            ordersTable.$('tr.selected').removeClass('selected');
-            $(this).addClass('selected');
-        }
-    });
-    */
+     $('#orders_table tbody').on('click', 'tr', function () {
+     if ($(this).hasClass('selected')) {
+     $(this).removeClass('selected');
+     }
+     else {
+     ordersTable.$('tr.selected').removeClass('selected');
+     $(this).addClass('selected');
+     }
+     });
+     */
 
     table_click_attached = false;
 }
@@ -202,11 +203,7 @@ function openPreviewSelect(orderNumber) {
 }
 
 
-
-
-
-
-function logout () {
+function logout() {
     // if (window.confirm("确定退出？")) {
     // doLogout()
     var ret = ipc.sendSync('session', {opt: 'clear', key: ''});
@@ -219,30 +216,29 @@ function logout () {
     // }
 }
 /*function findByOrderNumber(order_number) {
-    pgquery({
-        sql: findSaleOrder, params: [order_number], doResult: function (result) {
-            //console.log(result.rows)
-            var json_data = result.rows[0].data;
-            //console.log(json_data)
-            var r = ipc.sendSync('session', {
-                opt: 'put',
-                key: 'order',
-                value: {order_info: json_data, type: "select"}
-            });
-            $('#__m').modal('show')
-            //var r = ipc.sendSync('hide_main_window', {});
-            p_win = window.open('sale-order-preview.html', '打印', "width=800,height=600,alwaysOnTop=true");
-            window.onfocus = function () {
-                if (!p_win.closed) {
-                    p_win.focus();
-                }
-            }
-        }
-    });
-}*/
+ pgquery({
+ sql: findSaleOrder, params: [order_number], doResult: function (result) {
+ //console.log(result.rows)
+ var json_data = result.rows[0].data;
+ //console.log(json_data)
+ var r = ipc.sendSync('session', {
+ opt: 'put',
+ key: 'order',
+ value: {order_info: json_data, type: "select"}
+ });
+ $('#__m').modal('show')
+ //var r = ipc.sendSync('hide_main_window', {});
+ p_win = window.open('sale-order-preview.html', '打印', "width=800,height=600,alwaysOnTop=true");
+ window.onfocus = function () {
+ if (!p_win.closed) {
+ p_win.focus();
+ }
+ }
+ }
+ });
+ }*/
 /*var customerData = new Array();
-var customerInfo = new Array();*/
-
+ var customerInfo = new Array();*/
 
 
 function openPreviewWindow() {
@@ -264,7 +260,7 @@ function openPreviewWindow() {
     mainWin.setMaximizable(false);
     mainWin.setMovable(false);
 
-    win.on('printed', function(data) {
+    win.on('printed', function (data) {
         if (data == 'create') {
             // resetForm();
             resetOrderForm()
@@ -293,15 +289,15 @@ function openPreviewCreate() {
     var c_customer_id = $('#customer_id').val();
     var c_customer_name = $('#customer_name').val();
 
-   /* for (var i = 0; i < customerData.length; i++) {
-        var _children = customerData[i].children;
-        for (var j = 0; j < _children.length; j++) {
-            if (_children[j].id == c_customer_id) {
-                c_customer_name = _children[j].text;
-                break;
-            }
-        }
-    }*/
+    /* for (var i = 0; i < customerData.length; i++) {
+     var _children = customerData[i].children;
+     for (var j = 0; j < _children.length; j++) {
+     if (_children[j].id == c_customer_id) {
+     c_customer_name = _children[j].text;
+     break;
+     }
+     }
+     }*/
     var c_customer_address = $('#customer_address').val();
     var c_customer_principal = $('#customer_principal').val();
     var c_customer_phone = $('#customer_phone').val();
@@ -310,8 +306,6 @@ function openPreviewCreate() {
     if (c_product_total_sum != '') {
         c_product_total_sum = accounting.unformat(c_product_total_sum)
     }
-
-
 
 
     var c_products = new Array();
@@ -342,7 +336,7 @@ function openPreviewCreate() {
         c_products.push({
             // product_category_id: product_category_id,
             product_name: product_name,
-           // product_modal_id: modal,
+            // product_modal_id: modal,
             modal_name: modal,
             modal_units: product_units,
             product_num: product_num,
@@ -359,23 +353,24 @@ function openPreviewCreate() {
      */
     var order_info = {
         customer: c_customer_id,
-        customer_info:{
+        customer_info: {
             id: c_customer_id,
             name: c_customer_name,
             address: c_customer_address,
             principal: c_customer_principal,
-            phone: c_customer_phone },
+            phone: c_customer_phone
+        },
         sale_date: c_sale_date,
         products: c_products,
-        create_user_info:user,
+        create_user_info: user,
         create_user: user.id,
-        total_num:total_num,
+        total_num: total_num,
         total_sum: c_product_total_sum
     };
     var order = {order_info: order_info, type: "create"}
     pgquery({//获取最后的order_number
         sql: getCurrentOrderNumber, params: [], doResult: function (result) {
-            var curr_order_number =  result.rows[0].order_number;
+            var curr_order_number = result.rows[0].order_number;
             order.order_info.order_number = curr_order_number;
             order.order_number = order.order_info.order_number;
             //console.log(JSON.stringify(order_info))
@@ -394,10 +389,10 @@ function openPreviewCreate() {
 function initSaleDate() {
 
     $("#sale_date").datepicker(datepicker_options);
-   // $("#sale_date").datepicker("setDate",new Date());
-
-    $("#sale_date_begin").datepicker(datepicker_options);
-    $("#sale_date_end").datepicker(datepicker_options);
+    $("#sale_date").datepicker("setDate", new Date());
+    /*
+     $("#sale_date_begin").datepicker(datepicker_options);
+     $("#sale_date_end").datepicker(datepicker_options);*/
 
 }
 
@@ -429,8 +424,8 @@ function clearOneModalItem(src) {
 
 /*清空所有商品项*/
 function clearProductItems() {
-   // $('.product_name').val('')
-   // $('.product_modal').val('')
+    // $('.product_name').val('')
+    // $('.product_modal').val('')
     $('.product_units').val('')
     $('.product_unit_price').val('')
     $('.product_num').val('');
@@ -444,60 +439,60 @@ function clearTotalSum() {
 }
 
 /*function change_modal(src) {
-    var _modal_id = $(src).val();
-    var _idx = $(src).parent().parent().attr('idx');  // tr attr 'idx'
-    if (_modal_id == 0 || _modal_id == '') {
-        // 选择空项目
+ var _modal_id = $(src).val();
+ var _idx = $(src).parent().parent().attr('idx');  // tr attr 'idx'
+ if (_modal_id == 0 || _modal_id == '') {
+ // 选择空项目
 
-        $('tr[idx="' + _idx + '"] .product_category').val('');
-        $('tr[idx="' + _idx + '"] .product_category').attr("category_id", '');
+ $('tr[idx="' + _idx + '"] .product_category').val('');
+ $('tr[idx="' + _idx + '"] .product_category').attr("category_id", '');
 
-        $('tr[idx="' + _idx + '"] .product_units').val('');
-        $('tr[idx="' + _idx + '"] .product_units').attr("units_id", '');
-        $('tr[idx="' + _idx + '"] .product_unit_price').val('');
+ $('tr[idx="' + _idx + '"] .product_units').val('');
+ $('tr[idx="' + _idx + '"] .product_units').attr("units_id", '');
+ $('tr[idx="' + _idx + '"] .product_unit_price').val('');
 
-        $('tr[idx="' + _idx + '"] .product_num').val('');
-        $('tr[idx="' + _idx + '"] .product_sum').val('');
-        $('tr[idx="' + _idx + '"] .product_memo').val('');
-        // 重新计算金额
-        changeNumOrUnitPrice(src);
-        return;
+ $('tr[idx="' + _idx + '"] .product_num').val('');
+ $('tr[idx="' + _idx + '"] .product_sum').val('');
+ $('tr[idx="' + _idx + '"] .product_memo').val('');
+ // 重新计算金额
+ changeNumOrUnitPrice(src);
+ return;
 
-        //  $('.product_category[idx="'+_idx+'"]').val('');
-        //  $('.product_category[idx="'+_idx+'"]').attr("category_id", '');
+ //  $('.product_category[idx="'+_idx+'"]').val('');
+ //  $('.product_category[idx="'+_idx+'"]').attr("category_id", '');
 
-        //  $('.product_units[idx="'+_idx+'"]').val('');
-        //  $('.product_units[idx="'+_idx+'"]').attr("units_id", '');
-        //  $('.product_unit_price[idx="'+_idx+'"]').val('');
+ //  $('.product_units[idx="'+_idx+'"]').val('');
+ //  $('.product_units[idx="'+_idx+'"]').attr("units_id", '');
+ //  $('.product_unit_price[idx="'+_idx+'"]').val('');
 
-        //  $('.product_num[idx="'+_idx+'"]').val('');
-        //  $('.product_sum[idx="'+_idx+'"]').val('');
-        //  $('.product_memo[idx="'+_idx+'"]').val('');
-    }
+ //  $('.product_num[idx="'+_idx+'"]').val('');
+ //  $('.product_sum[idx="'+_idx+'"]').val('');
+ //  $('.product_memo[idx="'+_idx+'"]').val('');
+ }
 
-    var found = false;
-    for (var i = 0; i < modals.length; i++) {
-        var modalOptions = modals[i].options;
-        for (var j = 0; j < modalOptions.length; j++) {
-            if (modalOptions[j].modal_id == _modal_id) {
-                $('tr[idx="' + _idx + '"] .product_category').val(modalOptions[j].category_name);
-                $('tr[idx="' + _idx + '"] .product_category').attr("category_id", modalOptions[j].category_id);
+ var found = false;
+ for (var i = 0; i < modals.length; i++) {
+ var modalOptions = modals[i].options;
+ for (var j = 0; j < modalOptions.length; j++) {
+ if (modalOptions[j].modal_id == _modal_id) {
+ $('tr[idx="' + _idx + '"] .product_category').val(modalOptions[j].category_name);
+ $('tr[idx="' + _idx + '"] .product_category').attr("category_id", modalOptions[j].category_id);
 
-                $('tr[idx="' + _idx + '"] .product_units').val(modalOptions[j].units_name);
-                $('tr[idx="' + _idx + '"] .product_units').attr("units_id", modalOptions[j].units_id);
-                $('tr[idx="' + _idx + '"] .product_unit_price').val(modalOptions[j].suggest_unit_price);
+ $('tr[idx="' + _idx + '"] .product_units').val(modalOptions[j].units_name);
+ $('tr[idx="' + _idx + '"] .product_units').attr("units_id", modalOptions[j].units_id);
+ $('tr[idx="' + _idx + '"] .product_unit_price').val(modalOptions[j].suggest_unit_price);
 
-                found = true;
-                break;
-            }
-        }
+ found = true;
+ break;
+ }
+ }
 
-        if (found)
-            break;
-    }
-    // 重新计算金额
-    changeNumOrUnitPrice(src);
-}*/
+ if (found)
+ break;
+ }
+ // 重新计算金额
+ changeNumOrUnitPrice(src);
+ }*/
 
 /*商品数量或者单价修改触发*/
 function changeNumOrUnitPrice(src) {
@@ -572,22 +567,23 @@ function setTotalSum() {
  */
 function initNewOrderPage() {
     initSaleDate()
-    $('.product_num').on('change', function (){ changeNumOrUnitPrice(this)})
-    $('.product_unit_price').on('change', function (){changeNumOrUnitPrice(this)})
-    $(".product_name").on('change', function (){selectProduct(this)})
-    $(".product_modal").on('change', function (){selectModal(this)})
+    $('.product_num').on('change', function () {
+        changeNumOrUnitPrice(this)
+    })
+    $('.product_unit_price').on('change', function () {
+        changeNumOrUnitPrice(this)
+    })
+    $(".product_name").on('change', function () {
+        selectProduct(this)
+    })
+    $(".product_modal").on('change', function () {
+        selectModal(this)
+    })
 
     //todo
-    $('#customer_name').on('click', function(){
-        const BrowserWindow = require('electron').remote.BrowserWindow;
-        var mainWin =  BrowserWindow.getFocusedWindow()
-        // In the main process.
-        //const BrowserWindow = require('electron').BrowserWindow;
-        $.colorbox({inline:"#main_layout", width:-1, height:-1, open:true, speed:0,overlayClose:false,escKey:false,arrowKey:false});
-
-        var win = new BrowserWindow({ title:'选择客户', width: 1200, height: 700, show: false, resizable:false,autoHideMenuBar:true,acceptFirstMouse:true });
-        win.on('select_customer', function(customer) {
-            console.log("Get customer => "+JSON.stringify(customer));
+    $('#customer_name').on('click', function () {
+        openCustomerWindow(function (customer) {
+            console.log("Get customer => " + JSON.stringify(customer));
             // 获取到客户数据
             $('#customer_id').val(customer.id);
             $('#customer_name').val(customer.name);
@@ -604,26 +600,66 @@ function initNewOrderPage() {
             });
 
         });
-
-        win.on('closed', function() {
-            win = null;
-            mainWin.setClosable(true);
-            mainWin.setResizable(true);
-            mainWin.setMinimizable(true);
-            mainWin.setMaximizable(true);
-            mainWin.setMovable(true);
-            $.colorbox.close()
-        });
-
-        win.loadURL('file://' + __dirname + '/sys_manage/customer-manage.html?flag=1');
-        win.show();
-        mainWin.setClosable(false);
-        mainWin.setResizable(false);
-        mainWin.setMinimizable(false);
-        mainWin.setMaximizable(false);
-        mainWin.setMovable(false);
-
     })
+
+}
+
+function openCustomerWindowInList() {
+    openCustomerWindow(function (customer) {
+        console.log("Get customer => " + JSON.stringify(customer));
+        // 获取到客户数据
+        $('#search_customer').attr('customer_id', customer.id);
+        $('#search_customer').val(customer.name);
+
+        findOrders()
+    });
+}
+
+
+function openCustomerWindow(onSelectListener) {
+    const BrowserWindow = require('electron').remote.BrowserWindow;
+    var mainWin = BrowserWindow.getFocusedWindow()
+    // In the main process.
+    //const BrowserWindow = require('electron').BrowserWindow;
+    $.colorbox({
+        inline: "#main_layout",
+        width: -1,
+        height: -1,
+        open: true,
+        speed: 0,
+        overlayClose: false,
+        escKey: false,
+        arrowKey: false
+    });
+
+    var win = new BrowserWindow({
+        title: '选择客户',
+        width: 1200,
+        height: 700,
+        show: false,
+        resizable: false,
+        autoHideMenuBar: true,
+        acceptFirstMouse: true
+    });
+    win.on('select_customer', onSelectListener /*function(customer){onSelectCallback(customer);} */);
+
+    win.on('closed', function () {
+        win = null;
+        mainWin.setClosable(true);
+        mainWin.setResizable(true);
+        mainWin.setMinimizable(true);
+        mainWin.setMaximizable(true);
+        mainWin.setMovable(true);
+        $.colorbox.close()
+    });
+
+    win.loadURL('file://' + __dirname + '/sys_manage/customer-manage.html?flag=1');
+    win.show();
+    mainWin.setClosable(false);
+    mainWin.setResizable(false);
+    mainWin.setMinimizable(false);
+    mainWin.setMaximizable(false);
+    mainWin.setMovable(false);
 
 }
 
@@ -632,11 +668,13 @@ function initNewOrderPage() {
  */
 function resetOrderForm() {
     /*
-    const BrowserWindow = require('electron').remote.BrowserWindow;
-    var win = BrowserWindow.getFocusedWindow();
-    win.reload();
-    */
+     const BrowserWindow = require('electron').remote.BrowserWindow;
+     var win = BrowserWindow.getFocusedWindow();
+     win.reload();
+     */
     $('input').val('');
+    $('#sale_date').datepicker('setDate', new Date())
+
     $('select').html('<option></option>')
     clearTotalSum();
 
@@ -646,15 +684,52 @@ function resetOrderForm() {
  * 根据条件查询订单，并显示在表格上。
  * @param conditions
  */
-function findOrders(conditions) {
-    var sql = sql_find_all_orders;
-    var parameters = [];
-    if (conditions != null) {
-        sql = sql.replace('__condition__', conditions.text)   // text: where $1 , params:[]
-        parameters = conditions.params;
+function findOrders() {
+    var condition = null;
+
+    var customer_id = $('#search_customer').attr('customer_id');
+    var sale_date_begin = $('#sale_date_begin').val();
+    var sale_date_end = $('#sale_date_end').val();
+
+    var condition_sql_arr = []
+    var condition_param_arr = []
+    if (customer_id != '') {
+        condition_sql_arr.push(' customer = $? ');
+        condition_param_arr.push(customer_id);
     }
+    if (sale_date_begin != '') {
+        condition_sql_arr.push(" sale_date >= $? ");
+        condition_param_arr.push(sale_date_begin);
+    }
+    if (sale_date_end != '') {
+        condition_sql_arr.push(" sale_date <= $? ");
+        condition_param_arr.push(sale_date_end);
+    }
+
+    if (condition_sql_arr.length > 0) {
+        condition = {}
+        condition.sql = " where ";
+        for (var x=0; x<condition_sql_arr.length; x++) {
+            if (x > 0) {
+                condition.sql += " and "
+            }
+            var _sql = condition_sql_arr[x].replace('?', (x+1));
+            condition.sql += _sql;
+        }
+        condition.params = condition_param_arr;
+    }
+
+
+    var sqlFindOrders = sql_find_all_orders;
+    var parameters = [];
+    if (condition != null) {
+        sqlFindOrders = sqlFindOrders.replace('__condition__', condition.sql)   // text: where $1 , params:[]
+        parameters = condition.params;
+    }
+
+    console.info("SQL_FIND_ORDERS: "+sqlFindOrders +"/nPARAMS: " + JSON.stringify(parameters))
     pgquery({
-        sql: sql, params: parameters, doResult: function (result) {
+        sql: sqlFindOrders, params: parameters, doResult: function (result) {
             //showRows(result1.rows);
             var tableData = [];
             var rows = result.rows;
@@ -665,10 +740,15 @@ function findOrders(conditions) {
                  for (var j in productArr) {
                  nr += "[" + productArr[j].product_name + ", "+productArr[j].modal_name +", " + productArr[j].product_num + productArr[j].modal_units +"]"
                  }*/
-                var nr = productArr[0].product_name + ", "+productArr[0].modal_name +", " + productArr[0].product_num + productArr[0].modal_units +" ...";
+                var nr = productArr[0].product_name + ", " + productArr[0].modal_name + ", " + productArr[0].product_num + productArr[0].modal_units + " ...";
                 var orderInfo = {
-                    "DT_rowId": rows[i].order_number, "dh":rows[i].order_number, "shrq":rows[i].sale_date, "kh": rows[i].customer_info.name,
-                    "dz": rows[i].create_user_info.name, "llsj": rows[i].create_time.Format("yyyy-MM-dd hh:mm"), "nr": nr
+                    "DT_rowId": rows[i].order_number,
+                    "dh": rows[i].order_number,
+                    "shrq": rows[i].sale_date,
+                    "kh": rows[i].customer_info.name,
+                    "dz": rows[i].create_user_info.name,
+                    "llsj": rows[i].create_time.Format("yyyy-MM-dd hh:mm"),
+                    "nr": nr
                 }
                 tableData.push(orderInfo);
             }
@@ -743,7 +823,7 @@ function setProductSelect(products) {
     $('.product_modal').html(str);
     console.log("Reset product modal.")
     for (var x  in products) {
-       str += '<option value="'+ products[x].name+'">' + products[x].name +'</option>';
+        str += '<option value="' + products[x].name + '">' + products[x].name + '</option>';
     }
 
     $('.product_name').html(str);
@@ -755,7 +835,7 @@ function setProductSelect(products) {
 
 function selectProduct(src) {
     var _product_name = $(src).val();
-    console.log("Select product '"+_product_name+"'")
+    console.log("Select product '" + _product_name + "'")
     if (_product_name == '') {
         // 商品选择为空，说明不使用这条商品项目，清空之
         clearOneProductItem(src);
@@ -773,7 +853,7 @@ function selectProduct(src) {
 function setModalSelect(src, modals) {
     var str = '<option value=""></option>';
     for (var x in modals) {
-        str += '<option value="'+modals[x].name+'">' + modals[x].name + '</option>';
+        str += '<option value="' + modals[x].name + '">' + modals[x].name + '</option>';
     }
     $(src).parent().next().children().html(str);
     CURRENT_MODALS = modals;
@@ -781,7 +861,7 @@ function setModalSelect(src, modals) {
 
 function selectModal(src) {
     var _modal_name = $(src).val();
-    console.log("Select Modal: '"+ _modal_name+"'");
+    console.log("Select Modal: '" + _modal_name + "'");
     if (_modal_name == '') {
         clearOneModalItem(src)
         return;
@@ -790,7 +870,7 @@ function selectModal(src) {
         if (_modal_name == CURRENT_MODALS[x].name) {
             $(src).parent().next().children().val(CURRENT_MODALS[x].units);
             var _suggest_price = CURRENT_MODALS[x].suggest_price;
-            if (_suggest_price == null || _suggest_price >0) {
+            if (_suggest_price == null || _suggest_price > 0) {
                 $(src).parent().next().next().next().children().val(_suggest_price);
             }
             break;
@@ -801,13 +881,22 @@ function selectModal(src) {
 function gotoRegionManage() {
 
     const BrowserWindow = require('electron').remote.BrowserWindow;
-    var mainWin =  BrowserWindow.getFocusedWindow()
+    var mainWin = BrowserWindow.getFocusedWindow()
 
-    $.colorbox({inline:"#main_layout", width:-1, height:-1, open:true, speed:0,overlayClose:false,escKey:false,arrowKey:false});
+    $.colorbox({
+        inline: "#main_layout",
+        width: -1,
+        height: -1,
+        open: true,
+        speed: 0,
+        overlayClose: false,
+        escKey: false,
+        arrowKey: false
+    });
 
 
-    var win = new BrowserWindow({ width: 1200, height: 700, show: false, resizable:false,autoHideMenuBar:true });
-    win.on('closed', function() {
+    var win = new BrowserWindow({width: 1200, height: 700, show: false, resizable: false, autoHideMenuBar: true});
+    win.on('closed', function () {
         win = null;
         mainWin.setClosable(true);
         mainWin.setResizable(true);
@@ -833,17 +922,34 @@ function gotoRegionManage() {
 function gotoCustomerManage() {
 
     const BrowserWindow = require('electron').remote.BrowserWindow;
-    var mainWin =  BrowserWindow.getFocusedWindow()
+    var mainWin = BrowserWindow.getFocusedWindow()
     // In the main process.
     //const BrowserWindow = require('electron').BrowserWindow;
-    $.colorbox({inline:"#main_layout", width:-1, height:-1, open:true, speed:0,overlayClose:false,escKey:false,arrowKey:false});
+    $.colorbox({
+        inline: "#main_layout",
+        width: -1,
+        height: -1,
+        open: true,
+        speed: 0,
+        overlayClose: false,
+        escKey: false,
+        arrowKey: false
+    });
 
-    var win = new BrowserWindow({title:'管理客户', width: 1200, height: 700, show: false, resizable:false,autoHideMenuBar:true,acceptFirstMouse:true });
-    win.on('select_customer', function(customer) {
+    var win = new BrowserWindow({
+        title: '管理客户',
+        width: 1200,
+        height: 700,
+        show: false,
+        resizable: false,
+        autoHideMenuBar: true,
+        acceptFirstMouse: true
+    });
+    win.on('select_customer', function (customer) {
         alert(customer)
     });
 
-    win.on('closed', function() {
+    win.on('closed', function () {
         win = null;
         mainWin.setClosable(true);
         mainWin.setResizable(true);

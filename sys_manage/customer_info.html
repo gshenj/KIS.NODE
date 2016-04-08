@@ -2,8 +2,6 @@
 <html lang="zh_CN">
 <head>
     <meta charset="UTF-8">
-    <title>客户信息</title>
-
     <script>
         jQuery = require('jquery')
         $ = jQuery;
@@ -54,92 +52,124 @@
         <div class="box_label"><strong>地址：</strong></div>
         <div><input type="text" id="c_address" class="box_input"/></div>
         <div class="box_label" style="text-align:right; margin-right:10px;">
-            <button id="btn_add" class="btn btn-primary" onclick="doneOptRegion()">确定新增</button>
-            <button id="btn_update" class="btn btn-success" onclick="doneOptRegion()">确定修改</button>
-            <button id="btn_delete" class="btn btn-danger" onclick="doneOptRegion()">确定删除</button>
+            <button id="btn_add" class="btn btn-primary" onclick="addCustomer()">确定新增</button>
+            <button id="btn_update" class="btn btn-success" onclick="updateCustomer()">确定修改</button>
+            <button id="btn_delete" class="btn btn-danger" onclick="deleteCustomer()">确定删除</button>
         </div>
 
     </div>
-
-    <!--    <div style="float:left; width:280px;margin-left:4px; padding:0 20px 0 0">
-            <div style="margin-top:20px; color:#333333"><strong>产品：</strong></div>
-            <div><input type="text" name="c_name" style="width:100%; height:35px; line-height:35px;"/><input type="hidden" name="id"/></div>
-
-            <div style="margin-top:10px; color:#333333"><strong>型号：</strong></div>
-            <div><input type="text" name="c_simple_code" style="width:100%; height:35px; line-height:35px;"/></div>
-
-        </div>-->
-    <!--<div style="margin:0 auto; text-align:center;border:0px solid black;">
-        <div style="margin:20px auto 10px;">
-            <button id="btn_add" class="btn btn-primary" onclick="doneOptRegion()">确定新增</button>
-            <button id="btn_update" class="btn btn-success" onclick="doneOptRegion()">确定修改</button>
-            <button id="btn_delete" class="btn btn-danger" onclick="doneOptRegion()">确定删除</button>
-        </div>
-    </div>-->
-
 </div>
 
 <script>
-    function getUrlParam(name) {
-        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
-        var r = window.location.search.substr(1).match(reg); //匹配目标参数
-        if (r != null) return unescape(r[2]);
-        return null; //返回参数值
-    }
 
+    var url = document.location.href;
+    console.log(url)
     var customer_id = getUrlParam('id');
 
     //1:add,  2:delete,  3:modify
     var opt_type = getUrlParam('type');
+    var pcode = getUrlParam('pcode');
 
     var customer = {id: customer_id}
 
-    if (opt_type == 1) {
-        $('#c_id').val('')
-        $('#c_name').val('');
-        $('#c_simple_code').val('');
-        $('#c_phone').val('');
-        $('#c_principal').val('');
-        $('#c_address').val('');
-        $('#btn_add').show();
+    $(function(){
+        if (opt_type == 1) {
+            $('#c_id').val('')
+            $('#c_name').val('');
+            $('#c_simple_code').val('');
+            $('#c_phone').val('');
+            $('#c_principal').val('');
+            $('#c_address').val('');
+            $('#btn_add').show();
 
-    } else {
+        } else {
+            pgquery({
+                sql: sql_find_customer_by_id, params: [customer_id], doResult: function (result) {
+                    var rows = result.rows;
+                    if (rows.length == 0) {
+                        alert('未找到客户数据！')
+                        return;
+                    }
+
+                    customer.name = rows[0].name;
+                    customer.customerInfo = rows[0].customer_info;
+
+
+                    $('#c_id').val(customer.id)
+                    $('#c_name').val(customer.name);
+                    $('#c_simple_code').val(customer.customerInfo.simple_code);
+                    $('#c_phone').val(customer.customerInfo.phone);
+                    $('#c_principal').val(customer.customerInfo.principal);
+                    $('#c_address').val(customer.customerInfo.address);
+
+                    if (opt_type == 2) {
+                        $('#c_id').attr('disabled', true)
+                        $('#c_name').attr('disabled', true)
+                        $('#c_simple_code').attr('disabled', true)
+                        $('#c_phone').attr('disabled', true)
+                        $('#c_principal').attr('disabled', true)
+                        $('#c_address').attr('disabled', true)
+                        $('#btn_delete').show();
+
+                    } else if (opt_type == 3) {
+                        $('#btn_update').show();
+                    }
+                }
+            });
+        }
+    })
+
+
+    function addCustomer() {
+
+        var c_name = $('#c_name').val();
+        var c_address = $('#c_address').val();
+        var c_phone = $('#c_phone').val();
+        var c_principal = $('#c_principal').val();
+        var c_simple_code = $('#c_simple_code').val();
+        var customer_info = {name: c_name, phone:c_phone, principal: c_principal, address:c_address, simple_code:c_simple_code};
         pgquery({
-            sql: sql_find_customer_by_id, params: [customer_id], doResult: function (result) {
-                var rows = result.rows;
-                if (rows.length == 0) {
-                    alert('未找到客户数据！')
-                    return;
-                }
-
-                customer.name = rows[0].name;
-                customer.customerInfo = rows[0].customer_info;
-
-
-                $('#c_id').val(customer.id)
-                $('#c_name').val(customer.name);
-                $('#c_simple_code').val(customer.customerInfo.simple_code);
-                $('#c_phone').val(customer.customerInfo.phone);
-                $('#c_principal').val(customer.customerInfo.principal);
-                $('#c_address').val(customer.customerInfo.address);
-
-                if (opt_type == 2) {
-                    $('#c_id').attr('disabled', true)
-                    $('#c_name').attr('disabled', true)
-                    $('#c_simple_code').attr('disabled', true)
-                    $('#c_phone').attr('disabled', true)
-                    $('#c_principal').attr('disabled', true)
-                    $('#c_address').attr('disabled', true)
-                    $('#btn_delete').show();
-
-                } else if (opt_type == 3) {
-                    $('#btn_update').show();
-                }
+            sql: sql_add_customer, params: [customer_info.name, pcode, customer_info, ], doResult: function (result) {
+                console.log(result);
+                const BrowserWindow = require('electron').remote.BrowserWindow;
+                var thisWin = BrowserWindow.getFocusedWindow();
+                thisWin.emit('refresh');
+                thisWin.close();
             }
-        });
+        })
     }
 
+    function updateCustomer() {
+        var c_id = $('#c_id').val();
+        var c_name = $('#c_name').val();
+        var c_address = $('#c_address').val();
+        var c_phone = $('#c_phone').val();
+        var c_principal = $('#c_principal').val();
+        var c_simple_code = $('#c_simple_code').val();
+        var customer_info = {name: c_name, phone:c_phone, principal: c_principal, address:c_address, simple_code:c_simple_code};
+        pgquery({
+            sql: sql_update_customer, params: [customer_info.name, customer_info, c_id ], doResult: function (result) {
+                console.log(result);
+                const BrowserWindow = require('electron').remote.BrowserWindow;
+                var thisWin = BrowserWindow.getFocusedWindow();
+                thisWin.emit('refresh');
+                thisWin.close();
+            }
+        })
+    }
 
+    function deleteCustomer() {
+        var c_id = $('#c_id').val();
+        pgquery({
+            sql: sql_delete_customer, params: [c_id ], doResult: function (result) {
+                console.log(result);
+                const BrowserWindow = require('electron').remote.BrowserWindow;
+                var thisWin = BrowserWindow.getFocusedWindow();
+                thisWin.emit('refresh');
+                thisWin.close();
+            }
+        })
+    }
 </script>
 </body>
 </html>
