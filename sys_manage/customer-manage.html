@@ -120,8 +120,8 @@
             regionTreeObj.destroy();
         }
 
-        pgquery({
-            sql: sql_find_regions, params: [], doResult: function (result) {
+        DB_QUERY({
+            sql: SQL_FIND_REGIONS, params: [], doResult: function (result) {
                 var zNodes = new Array();
                 var rows = result.rows;
                 for (var i = 0; i < rows.length; i++) {
@@ -189,8 +189,8 @@
     }
 
     function changeData(params) {
-        pgquery({
-            sql: sql_find_customers_by_region, params: params, doResult: function (result) {
+        DB_QUERY({
+            sql: SQL_FIND_CUSTOMERS_BY_REGION, params: params, doResult: function (result) {
                 var tableData = [];
                 var rows = result.rows;
                 for (var i = 0; i < rows.length; i++) {

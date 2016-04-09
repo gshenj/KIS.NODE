@@ -99,7 +99,7 @@
     var login = function() {
 	    var uname = document.querySelector("#username").value;
         console.log(uname);
-        pgquery({sql:'SELECT * from kis_user where name=$1', params:[uname], doResult:doLogin})
+        DB_QUERY({sql:SQL_FIND_USER_BY_NAME, params:[uname], doResult:doLogin})
         return false;
     };
     

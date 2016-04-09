@@ -7,19 +7,21 @@ $ = jQuery;
 //console.log(jQuery.fn.jquery)
 
 
+ANCESTOR_NODE_TEXT = "归属地区";
+
 /**
  * 添加node.js for Postgres支持。
  * @type {PG|exports|module.exports}
  */
-var pg = require('pg');
-var conString = "postgres://kisweb:kisweb@localhost/kisweb";
+_pg = require('pg');
+_conString = "postgres://kisweb:kisweb@localhost/kisweb";
 //this initializes a connection pool 
 //it will keep idle connections open for a (configurable) 30 seconds 
 //and set a limit of 20 (also configurable) 
 
 //query is map like this {sql:'',params:[], doResult:callback}
-var pgquery = function (query) {
-    pg.connect(conString, function (err, client, done) {
+DB_QUERY = function (query) {
+    _pg.connect(_conString, function (err, client, done) {
         if (err) {
             return console.error('error fetching client from pool', err);
         }
@@ -36,6 +38,8 @@ var pgquery = function (query) {
     });
 };
 
+
+/*
 var getCustomers = "SELECT customer.id customer_id, customer.name as customer_name, tel_number, mobile_number, address,  principal, company, city.name as city_name, city.id " +
     "FROM customer,city " +
     "where customer.city = city.id " +
@@ -45,7 +49,9 @@ var getProductModals = "SELECT product_modal.id as modal_id, product_modal.name 
     "FROM product_modal , product_category, product_units " +
     "where product_modal.customer = $1 and product_modal.category = product_category.id and product_units.id=product_modal.units " +
     "order by product_modal.id"
+*/
 
+/*
 var setUpdateOrderNumber = "update sale_order_number set order_number=order_number+1";
 //var getCurrentOrderNumber = "select order_number from sale_order_number";
 var getCurrentOrderNumber = "select nextval('seq_order_number') as order_number";
@@ -55,30 +61,33 @@ var addSaleOrder = "insert into sale_order_json(order_number,customer_id, sale_d
 var findAllSaleOrder = "select data,order_number, customer_id, create_date from sale_order_json order by order_number desc limit $1 offset $2";  // limit 20 offset 0
 var countAllSaleOrder = "select count(*) as cnt from sale_order_json";
 
-var sql_find_order = "select order_number, customer,customer_info, create_user, create_user_info, sale_date, create_time, products, total_sum, total_num from orders where order_number = $1";
-var sql_find_all_orders = "select order_number, customer,customer_info, create_user, create_user_info, sale_date, create_time, products, total_sum, total_num from orders __condition__ order by order_number desc";
 
 var findSaleOrder = "select customer.name, customer.id, sale_order.order_number, sale_order.data from customer, sale_order_json sale_order where sale_order.customer_id = customer.id and order_number = $1";
+*/
+var SQL_LAST_ORDER_NUMBER = "select COALESCE(max(order_number), 100000 ) as order_number from orders";
+var SQL_FIND_ALL_ORDERS = "select order_number, customer,customer_info, create_user, create_user_info, sale_date, create_time, products, total_sum, total_num, canceled from orders __condition__ order by order_number desc";
 
-var sql_add_order = "insert into orders(order_number, sale_date, customer, customer_info, create_user, create_user_info, products, total_num, total_sum) values($1,$2,$3,$4,$5,$6,$7,$8,$9)";
+var SQL_FIND_USER_BY_NAME = 'SELECT * from kis_user where name=$1';
+var SQL_FIND_ORDER_BY_ORDER_NUMBER = "select order_number, customer,customer_info, create_user, create_user_info, sale_date, create_time, products, total_sum, total_num, canceled from orders where order_number = $1";
+var SQL_ADD_ORDER = "insert into orders(order_number, sale_date, customer, customer_info, create_user, create_user_info, products, total_num, total_sum) values(nextval('seq_order_number'), $1,$2,$3,$4,$5,$6,$7,$8)";
+var SQL_CANCEL_ORDER = "update orders set canceled = 1 where order_number = $1";
+var SQL_FIND_REGIONS = "select region from regions order by region->>'pcode';"
 
-var sql_find_regions = "select region from regions order by region->>'pcode';"
+var SQL_FIND_CUSTOMERS_BY_REGION = "select id, region,customer_info from customers where region >= $1 and region <= $2 order by region";
+var SQL_ADD_CUSTOMER = "insert into customers(id, name, region, customer_info) values(nextval('seq_kis'), $1, $2, $3)";
+var SQL_UPDATE_CUSTOMER = "update customers set name = $1, customer_info = $2 where id = $3";
+var SQL_DELETE_CUSTOMER = "delete from customers where id = $1";
+var SQL_FIND_CUSTOMER_BY_ID = "select * from customers where id = $1"
 
-var sql_find_customers_by_region = "select id, region,customer_info from customers where region >= $1 and region <= $2 order by region";
-var sql_add_customer = "insert into customers(id, name, region, customer_info) values(nextval('seq_kis'), $1, $2, $3)";
-var sql_update_customer = "update customers set name = $1, customer_info = $2 where id = $3";
-var sql_delete_customer = "delete from customers where id = $1";
-var sql_find_customer_by_id = "select * from customers where id = $1"
+var SQL_FIND_PRODUCTS_BY_CUSTOMER = "select name, modals from products where customer = $1 order by name asc";
+var SQL_ADD_PRODUCT = "insert into products(customer, name, modals) values($1, $2, $3)";
+var SQL_DELETE_PRODUCT = "delete from products where customer=$1 and name=$2"
+var SQL_UPDATE_PRODUCT = "update products set name = $1 where customer=$2 and name=$3"
+var SQL_UPDATE_MODALS = "update products set modals = $1 where customer=$2 and name=$3"
 
-var sql_find_products_by_customer = "select name, modals from products where customer = $1 order by name asc";
-var sql_add_product = "insert into products(customer, name, modals) values($1, $2, $3)";
-var sql_delete_product = "delete from products where customer=$1 and name=$2"
-var sql_update_product = "update products set name = $1 where customer=$2 and name=$3"
-var sql_update_modals = "update products set modals = $1 where customer=$2 and name=$3"
-
-var sql_add_region = "insert into regions(region) values($1)";
-var sql_update_region = "update regions set region = $1 where (region ->>'name') = $2"
-var sql_delete_region = "delete from regions where region->>'name'= $1"
+var SQL_ADD_REGION = "insert into regions(region) values($1)";
+var SQL_UPDATE_REGION = "update regions set region = $1 where (region ->>'name') = $2"
+var SQL_DELETE_REGION = "delete from regions where region->>'name'= $1"
 
 
 /**

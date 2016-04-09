@@ -103,6 +103,7 @@ function loadOrdersTable() {
                 "data": "dh"
             },
             {
+                className: "center",
                 "title": "送货日期",
                 "width": "10%",
                 "targets": [1],
@@ -110,7 +111,7 @@ function loadOrdersTable() {
             },
             {
                 "title": "客户",
-                "width": "25%",
+                "width": "20%",
                 "targets": [2],
                 "data": 'kh'
             },
@@ -122,18 +123,30 @@ function loadOrdersTable() {
                 "data": 'nr'
             },
             {
+                className: "center",
                 "orderable": false,
                 "title": "制单人",
-                "width": "10%",
+                "width": "8%",
                 "targets": [4],
                 "data": 'dz'
             },
             {
+                className: "center",
                 "orderable": false,
                 "title": "录入时间",
-                "width": "15%",
+                "width": "12%",
                 "targets": [5],
                 "data": 'llsj'
+            },
+            {
+                className: "center",
+                "title": "作废",
+                width:"10%",
+                targets:[6],
+                "data": "zf",
+                "render": function (data, type, row) {
+                    return (data == '1') ?'<span style="color:red">是</span>':'否';
+                },
             }
         ],
         scroller: {
@@ -188,8 +201,8 @@ function loadOrdersTable() {
  * @param src
  */
 function openPreviewSelect(orderNumber) {
-    pgquery({
-        sql: sql_find_order, params: [orderNumber], doResult: function (result) {
+    DB_QUERY({
+        sql: SQL_FIND_ORDER_BY_ORDER_NUMBER, params: [orderNumber], doResult: function (result) {
             if (result.rows.length == 0) {
                 alert('error');
                 return;
@@ -218,7 +231,7 @@ function logout() {
     // }
 }
 /*function findByOrderNumber(order_number) {
- pgquery({
+ DB_QUERY({
  sql: findSaleOrder, params: [order_number], doResult: function (result) {
  //console.log(result.rows)
  var json_data = result.rows[0].data;
@@ -266,6 +279,9 @@ function openPreviewWindow() {
         if (data == 'create') {
             // resetForm();
             resetOrderForm()
+        } else if (data == 'cancel') {
+            // reload table
+            findOrders();
         }
     });
 
@@ -367,13 +383,14 @@ function openPreviewCreate() {
         create_user_info: user,
         create_user: user.id,
         total_num: total_num,
-        total_sum: c_product_total_sum
+        total_sum: c_product_total_sum,
+        canceled: 0
     };
     var order = {order_info: order_info, type: "create"}
-    pgquery({//获取最后的order_number
-        sql: getCurrentOrderNumber, params: [], doResult: function (result) {
+    DB_QUERY({//获取最后的order_number
+        sql: SQL_LAST_ORDER_NUMBER, params: [], doResult: function (result) {
             var curr_order_number = result.rows[0].order_number;
-            order.order_info.order_number = curr_order_number;
+            order.order_info.order_number = (curr_order_number + 1);
             order.order_number = order.order_info.order_number;
             //console.log(JSON.stringify(order_info))
             ipcRenderer.sendSync('session', {opt: 'put', key: 'order', value: order});
@@ -593,8 +610,8 @@ function initNewOrderPage() {
             $('#customer_principal').val(customer.principal);
             $('#customer_phone').val(customer.phone);
             // get products of customer
-            pgquery({
-                sql: sql_find_products_by_customer, params: [customer.id], doResult: function (result) {
+            DB_QUERY({
+                sql: SQL_FIND_PRODUCTS_BY_CUSTOMER, params: [customer.id], doResult: function (result) {
                     var products = result.rows;
                     setProductSelect(products)
                     $.colorbox.close();
@@ -724,7 +741,7 @@ function findOrders() {
     }
 
 
-    var sqlFindOrders = sql_find_all_orders;
+    var sqlFindOrders = SQL_FIND_ALL_ORDERS;
     var parameters = [];
     if (condition != null) {
         sqlFindOrders = sqlFindOrders.replace('__condition__', condition.sql)   // text: where $1 , params:[]
@@ -732,7 +749,7 @@ function findOrders() {
     }
 
     console.info("SQL_FIND_ORDERS: "+sqlFindOrders +"/nPARAMS: " + JSON.stringify(parameters))
-    pgquery({
+    DB_QUERY({
         sql: sqlFindOrders, params: parameters, doResult: function (result) {
             //showRows(result1.rows);
             var tableData = [];
@@ -740,6 +757,8 @@ function findOrders() {
 
             for (var i = 0; i < rows.length; i++) {
                 var productArr = rows[i].products;
+                var canceled = rows[i].canceled;
+
                 /*var nr = "";
                  for (var j in productArr) {
                  nr += "[" + productArr[j].product_name + ", "+productArr[j].modal_name +", " + productArr[j].product_num + productArr[j].modal_units +"]"
@@ -752,7 +771,8 @@ function findOrders() {
                     "kh": rows[i].customer_info.name,
                     "dz": rows[i].create_user_info.name,
                     "llsj": rows[i].create_time.Format("yyyy-MM-dd hh:mm"),
-                    "nr": nr
+                    "nr": nr,
+                    "zf": canceled
                 }
                 tableData.push(orderInfo);
             }
@@ -764,11 +784,11 @@ function findOrders() {
 }
 /*
  function listOrders(limit, offset) {
- pgquery({
+ DB_QUERY({
  sql: countAllSaleOrder, params: [], doResult: function (result) {
  var count = result.rows[0].cnt;
  console.log("order size -> " + count);
- pgquery({
+ DB_QUERY({
  sql: findAllSaleOrder, params: [limit, offset], doResult: function (result1) {
  showRows(result1.rows);
  }

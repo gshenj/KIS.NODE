@@ -83,8 +83,8 @@
             $('#btn_add').show();
 
         } else {
-            pgquery({
-                sql: sql_find_customer_by_id, params: [customer_id], doResult: function (result) {
+            DB_QUERY({
+                sql: SQL_FIND_CUSTOMER_BY_ID, params: [customer_id], doResult: function (result) {
                     var rows = result.rows;
                     if (rows.length == 0) {
                         alert('未找到客户数据！')
@@ -128,8 +128,8 @@
         var c_principal = $('#c_principal').val();
         var c_simple_code = $('#c_simple_code').val();
         var customer_info = {name: c_name, phone:c_phone, principal: c_principal, address:c_address, simple_code:c_simple_code};
-        pgquery({
-            sql: sql_add_customer, params: [customer_info.name, pcode, customer_info, ], doResult: function (result) {
+        DB_QUERY({
+            sql: SQL_ADD_CUSTOMER, params: [customer_info.name, pcode, customer_info, ], doResult: function (result) {
                 console.log(result);
                 const BrowserWindow = require('electron').remote.BrowserWindow;
                 var thisWin = BrowserWindow.getFocusedWindow();
@@ -147,8 +147,8 @@
         var c_principal = $('#c_principal').val();
         var c_simple_code = $('#c_simple_code').val();
         var customer_info = {name: c_name, phone:c_phone, principal: c_principal, address:c_address, simple_code:c_simple_code};
-        pgquery({
-            sql: sql_update_customer, params: [customer_info.name, customer_info, c_id ], doResult: function (result) {
+        DB_QUERY({
+            sql: SQL_UPDATE_CUSTOMER, params: [customer_info.name, customer_info, c_id ], doResult: function (result) {
                 console.log(result);
                 const BrowserWindow = require('electron').remote.BrowserWindow;
                 var thisWin = BrowserWindow.getFocusedWindow();
@@ -160,8 +160,8 @@
 
     function deleteCustomer() {
         var c_id = $('#c_id').val();
-        pgquery({
-            sql: sql_delete_customer, params: [c_id ], doResult: function (result) {
+        DB_QUERY({
+            sql: SQL_DELETE_CUSTOMER, params: [c_id ], doResult: function (result) {
                 console.log(result);
                 const BrowserWindow = require('electron').remote.BrowserWindow;
                 var thisWin = BrowserWindow.getFocusedWindow();

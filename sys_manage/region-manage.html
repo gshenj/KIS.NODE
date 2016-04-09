@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>归属地管理</title>
+    <title>地区管理</title>
     <script>
         jQuery = require('jquery')
         $ = jQuery;
@@ -86,8 +86,8 @@
             regionTreeObj.destroy();
         }
 
-        pgquery({
-            sql: sql_find_regions, params: [], doResult: function (result) {
+        DB_QUERY({
+            sql: SQL_FIND_REGIONS, params: [], doResult: function (result) {
                 var zNodes = new Array();
                 var rows = result.rows;
                 for (var i = 0; i < rows.length; i++) {
@@ -233,8 +233,8 @@
 
             if (PARENT_NODE == null||PARENT_NODE.name == ancestorNodeText) {
                 var p1 = {name: _name, pcode: _pcode, cities: []}
-                pgquery({
-                    sql: sql_add_region, params: [p1], doResult: function (result) {
+                DB_QUERY({
+                    sql: SQL_ADD_REGION, params: [p1], doResult: function (result) {
                         regionTreeObj.destroy();
                         console.log("Re init tree menu.")
                         initTreeMenu();
@@ -252,8 +252,8 @@
 
                 var p1 = {name: PARENT_NODE.name, pcode: PARENT_NODE.pcode, cities: cities};
                 console.log("New parent node is :" + JSON.stringify(p1))
-                pgquery({
-                    sql: sql_update_region, params: [p1, p1.name], doResult: function (result) {
+                DB_QUERY({
+                    sql: SQL_UPDATE_REGION, params: [p1, p1.name], doResult: function (result) {
                         regionTreeObj.destroy();
                         console.log("Re init tree menu.")
                         initTreeMenu();
@@ -280,8 +280,8 @@
                 }
 
                 var region_node = {name: _name, pcode: _pcode, cities: cities};
-                pgquery({
-                    sql: sql_update_region, params: [region_node, _old_name], doResult: function (result) {
+                DB_QUERY({
+                    sql: SQL_UPDATE_REGION, params: [region_node, _old_name], doResult: function (result) {
                         regionTreeObj.destroy();
                         console.log("Re init tree menu.")
                         initTreeMenu();
@@ -304,8 +304,8 @@
                         }
                     }
                     var region = {name: _parent_node.name, pcode: _parent_node.pcode, cities: cities};
-                    pgquery({
-                        sql: sql_update_region, params: [region, region.name], doResult: function (result) {
+                    DB_QUERY({
+                        sql: SQL_UPDATE_REGION, params: [region, region.name], doResult: function (result) {
                             regionTreeObj.destroy();
                             console.log("Re init tree menu.")
                             initTreeMenu();
@@ -323,8 +323,8 @@
 
             if (DELETE_NODE.isParent) {
                 // 删除省
-                pgquery({
-                    sql: sql_delete_region, params: [DELETE_NODE.name], doResult: function (result) {
+                DB_QUERY({
+                    sql: SQL_DELETE_REGION, params: [DELETE_NODE.name], doResult: function (result) {
                         regionTreeObj.destroy();
                         console.log("Re init tree menu.")
                         initTreeMenu();
@@ -347,8 +347,8 @@
                 var p1 = {name: _parent_name, pcode: _parent_node.pcode, cities: cities};
                 console.log("After delete, new parent node json :" + JSON.stringify(p1))
 
-                pgquery({
-                    sql: sql_update_region, params: [p1, _parent_name], doResult: function (result) {
+                DB_QUERY({
+                    sql: SQL_UPDATE_REGION, params: [p1, _parent_name], doResult: function (result) {
                         regionTreeObj.destroy();
                         console.log("Re init tree menu.")
                         initTreeMenu();
