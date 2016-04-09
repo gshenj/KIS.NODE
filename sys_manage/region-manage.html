@@ -78,6 +78,8 @@
             beforeEditName: beforeEditName
         }
     };
+
+    var ancestorNodeText = "归属地区";
     var regionTreeObj = null;
     function initTreeMenu() {
         if (regionTreeObj != null) {
@@ -100,7 +102,7 @@
                 var zNodeX = new Array();
                 zNodeX.isParent = true;
                 zNodeX.children = zNodes;
-                zNodeX.name = "归属地区";
+                zNodeX.name = ancestorNodeText;
                 zNodeX.open = true;
                 zNodeX.pcode = ""
 
@@ -229,7 +231,7 @@
             //  var newNode = {name:_name, pcode:_pcode};
             //  newNode = regionTreeObj.addNodes(nodes[0], newNode);
 
-            if (PARENT_NODE == null) {
+            if (PARENT_NODE == null||PARENT_NODE.name == ancestorNodeText) {
                 var p1 = {name: _name, pcode: _pcode, cities: []}
                 pgquery({
                     sql: sql_add_region, params: [p1], doResult: function (result) {

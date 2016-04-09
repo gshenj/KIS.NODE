@@ -85,9 +85,11 @@ function loadOrdersTable() {
     ordersTable = $('#orders_table').DataTable({
         //  "scrollY": 500,
         "order": [[0, "desc"]],
-        "dom": '<"DT_top"<"DT_condition"><"DT_search"f><"DT_clear">>ti',
+        "dom": '<"DT_top"<"DT_condition"><"DT_search"f><"DT_clear">>tip',
         "scrollCollapse": false,
-        "paging": false,
+        "pagingType":'full_numbers',
+        "pageLength": 10,
+        //"paging": false,
         "data": [],
         "rowId": 'DT_rowId',
         "columnDefs": [
@@ -135,7 +137,7 @@ function loadOrdersTable() {
             }
         ],
         scroller: {
-            rowHeight: 20
+            rowHeight: 22
         },
         "language": {
             "url": "scripts/datatable/cn.json"
@@ -244,7 +246,7 @@ function logout() {
 function openPreviewWindow() {
     const BrowserWindow = require('electron').remote.BrowserWindow;
     var mainWin = BrowserWindow.getFocusedWindow();
-    var win = new BrowserWindow({width: 900, height: 600, show: false, resizable: false, autoHideMenuBar: true});
+    var win = new BrowserWindow({width: 900, height: 600, show: false, resizable: false, minimizable:false,alwaysOnTop:true, autoHideMenuBar: true});
     win.on('closed', function () {
         win = null;
         mainWin.setClosable(true);
@@ -592,7 +594,7 @@ function initNewOrderPage() {
             $('#customer_phone').val(customer.phone);
             // get products of customer
             pgquery({
-                sql: findProductsByCustomer, params: [customer.id], doResult: function (result) {
+                sql: sql_find_products_by_customer, params: [customer.id], doResult: function (result) {
                     var products = result.rows;
                     setProductSelect(products)
                     $.colorbox.close();
@@ -638,6 +640,8 @@ function openCustomerWindow(onSelectListener) {
         height: 700,
         show: false,
         resizable: false,
+        minimizable:false,
+        alwaysOnTop:true,
         autoHideMenuBar: true,
         acceptFirstMouse: true
     });
@@ -942,6 +946,8 @@ function gotoCustomerManage() {
         height: 700,
         show: false,
         resizable: false,
+        minimizable:false,
+        alwaysOnTop:true,
         autoHideMenuBar: true,
         acceptFirstMouse: true
     });

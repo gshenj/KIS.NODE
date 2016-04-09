@@ -262,7 +262,7 @@
                 }
             ],
             scroller: {
-                rowHeight: 20
+                rowHeight: 22
             },
             "language": {
                 "url": "../scripts/datatable/cn.json"
@@ -308,7 +308,8 @@
     function openChildWindow(title, url, onRefresh) {
         const BrowserWindow = require('electron').remote.BrowserWindow;
         var mainWin = BrowserWindow.getFocusedWindow();
-        var win = new BrowserWindow({title:title, width: 900, height: 600, show: false, resizable: false, autoHideMenuBar: true});
+        var win = new BrowserWindow({title:title, width: 900, height: 600, show: false, resizable: false,        minimizable:false,
+            alwaysOnTop:true, autoHideMenuBar: true});
         win.on('closed', function () {
             win = null;
             mainWin.setClosable(true);
@@ -316,6 +317,7 @@
             mainWin.setMinimizable(true);
             mainWin.setMaximizable(true);
             mainWin.setMovable(true);
+            mainWin.setAlwaysOnTop(true);
             $.colorbox.close()
         });
         win.on('refresh', onRefresh);
@@ -336,6 +338,7 @@
         mainWin.setMinimizable(false);
         mainWin.setMaximizable(false);
         mainWin.setMovable(false);
+        mainWin.setAlwaysOnTop(false);
         win.show();
     }
 
