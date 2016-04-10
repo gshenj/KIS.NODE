@@ -46,6 +46,10 @@ var user = ipcRenderer.sendSync('session', {opt: 'get', key: 'user'});
 $(function () {
     //console.log('Login user: ' + user.name);
 
+    $('#pass_update').colorbox({inline: true,"href":'#pass_update_div',width: '500px', height: '450px',
+        speed: 0,
+        overlayClose: false})
+
     $(".m_a").click(function () {
         $('.container').hide();
         var target = $(this).attr("data-target");
