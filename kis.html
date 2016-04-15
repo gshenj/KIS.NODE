@@ -4,10 +4,6 @@
 <head>
     <meta charset="utf-8">
     <title>新开出货单</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
     <script src="scripts/pgquery.js"></script>
     <script src="scripts/jquery-ui/jquery-ui.js"></script>
     <script src="scripts/accounting.min.js"></script>
@@ -117,7 +113,10 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand"><span style="font-size:18pt; font-weight:bold; color:#006699; padding:4px 10px;">苏州元斌塑胶科技有限公司 KIS 系统</span></a>
+            <a class="navbar-brand">
+                <span id="company_name" style="font-size:18pt; font-weight:bold; color:#006699; padding:4px 10px;">
+                    <script>document.write(company.name)</script> KIS 系统
+                </span></a>
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
@@ -125,17 +124,14 @@
             <ul class="nav navbar-nav">
                 <li class="active"><a href="#" class="m_a" data-target="__new__"><span
                         style="color:#333333; font-weight:bold; font-size:14pt; padding:4px 10px">新开出库单</span></a></li>
-                <!--<li><a href="sale-order-list.html">出货单列表</a></li>  &lt;!&ndash;javascript:findByOrderNumber(100052)&ndash;&gt;-->
                 <li><a href="#" class="m_a" data-target="__list__"><span
                         style="color:#333333; font-weight:bold; font-size:14pt; padding:4px 10px">出货单列表</span></a></li>
-                <!--javascript:findByOrderNumber(100052)-->
                 <li><a href="#" class="m_a" data-target="__sys__"><span
                         style="color:#333333; font-weight:bold;font-size:14pt; padding:4px 10px">系统管理</span></a></li>
             </ul>
 
 
             <ul class="nav navbar-nav navbar-right">
-
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" id="kis-u" data-toggle="dropdown" role="button"
                        aria-haspopup="true" aria-expanded="false" style="font-weight:bold;">
@@ -283,44 +279,8 @@
 
 <!--/**container __list__****************************************************/-->
 <div id="__list__" class="container" style="display:none;">
-    <!--    <div style="margin-top:10pt;">
-            <div style="float:left; margin-left:2pt;">
-            <label for="customer_name_1">客户名称：</label>
-            <select id="customer_name_1" style="width:280px; ">
-                <option></option>
-            </select>
-            </div>
-            <div style="float:left; margin-left:20pt;">
-                <label for="sale_date_begin">送货日期：</label>
-                <input id="sale_date_begin" style="width:80pt;" />
-                <label for="sale_date_end">至：</label>
-                <input id="sale_date_end"   style="width:80pt;"  />
-            </div>
-            <div style="float:left; margin-left:20pt;">
-                <button>查询</button>
-            </div>
-        </div>
-        <div  style="clear:both; height:10pt;">
-
-        </div>-->
     <table id="orders_table" class="display" cellspacing="0" width="100%">
     </table>
-    <!--<table id="list_table" class="table table-condensed table-hover table-bordered">
-        <thead>
-        <tr>
-            <th width="10%">出货单号</th>
-            <th width="10%">送货日期</th>
-            <th width="20%">客户名称</th>
-            <th width="36%">内容</th>
-            <th width="8%">制单人</th>
-            <th width="16%">录入时间</th>
-        </tr>
-        </thead>
-        <tbody>
-
-        </tbody>
-    </table>-->
-
 </div>
 
 <!--/**container __sys__****************************************************/-->
@@ -389,8 +349,7 @@
             </div>
             <div class="box_label"><strong>新密码：</strong><br/><input type="password" id="new_pass" class="box_input"/>
             </div>
-            <div class="box_label"><strong>确认新密码：</strong><br/><input type="password" id="new_pass_confirm"
-                                                                      class="box_input"/></div>
+            <div class="box_label"><strong>确认新密码：</strong><br/><input type="password" id="new_pass_confirm" class="box_input"/></div>
             <div class="box_label" style="text-align:right; margin-right:10px;">
                 <button id="btn_update_pass" class="btn btn-primary" onclick="doUpdatePass()">保存</button>
             </div>

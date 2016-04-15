@@ -37,65 +37,18 @@ app.on('window-all-closed', function () {
 });
 
 
-
-
 // In main process. Use to message between BrowserWindow.
 var ipcMain = require('electron').ipcMain;
-/*
- var win = null;
- //这个方法创建窗口，没用
- ipcMain.on('show_print_win', function(event, arg) {
- win = new BrowserWindow({width: 1000,
- height: 700
- ,'auto-hide-menu-bar': true,
- alwaysOnTop :true
- });
- win.setAlwaysOnTop(true);
- win.loadUrl('file://' + __dirname + '/'+arg.url);
- win.on('closed', function() {
- win = null;
- });
-
- event.returnValue = true;
- });
-
- ipcMain.on('hide_print_win', function(event, arg) {
- console.log("arg")
- console.log(arg)
-
- //mainWindow.webContents.executeJavaScript('hide_overlay('+arg+')');
- mainWindow.webContents.send('hide_overlay', arg);
-
- // ipc2.sendSync("hide_overlay", {})
- //event.sender.send("hide_overlay", {})
- event.returnValue = true;
- });*/
-
 
 ipcMain.on('jump_to_list', function (event, arg) {
     mainWindow.loadUrl('file://' + __dirname + arg.url);
     event.returnValue = true;
 });
 
-/*ipc.on('hide_main_window', function(event,arg) {
- //mainWindow.hide();
- mainWindow.setDocumentEdited(false);
- event.returnValue = true;
- });
-
- ipc.on('show_main_window', function(event,arg) {
- mainWindow.show();
- event.returnValue = true;
- });*/
-
-
 ipcMain.on('session', function (event, arg) {  // arg->{opt:'', key:'', value:''}
     var opt = arg.opt;
     if (opt == 'get') {
-        // console.log('get')
-
         var ret = session[arg.key];
-        //  console.log('ret'+ret)
         if (typeof(ret) == 'undefined')
             event.returnValue = 'undefined';
         else
@@ -106,23 +59,11 @@ ipcMain.on('session', function (event, arg) {  // arg->{opt:'', key:'', value:''
 
     } else if (opt == 'remove') {
         var bln = false;
-//  86         try {
-//  87             for (var k in session) {
-//  88                 if (session[k] == arg.key) {
-//  89                     this.elements.splice(i, 1);
-//  90                     return true;
-//  91                 }
-//  92             }
-//  93         } catch (e) {
-//  94             bln = false;
-//  95         }
-// 96
         event.returnValue = bln;
     } else if (opt == 'clear') {
         session = {};
         event.returnValue = 'true';
     }
-
 });
 
 

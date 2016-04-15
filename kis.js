@@ -41,11 +41,9 @@ accounting.settings = {
 //var p_win = null;
 
 var user = ipcRenderer.sendSync('session', {opt: 'get', key: 'user'});
-
+var company = ipcRenderer.sendSync('session', {opt:'get', key: 'company'});
 
 $(function () {
-    //console.log('Login user: ' + user.name);
-
     $('#pass_update').colorbox({inline: true,"href":'#pass_update_div',width: '500px', height: '450px',
         speed: 0,
         overlayClose: false})
@@ -160,7 +158,7 @@ function loadOrdersTable() {
             "url": "scripts/datatable/cn.json"
         },
         "initComplete": function (settings, json) {
-            var condition = '<label style="margin-left:10px;">客户名称：</label><input id="search_customer" customer_id="" onclick="openCustomerWindowInList()" type="text" style="width:300px;" /><label style="margin-left:20px;" for="sale_date_begin">送货日期：</label>' +
+            var condition = '<label style="margin-left:10px;">客户名称：</label><input id="search_customer"  onchange="changeCustomerSearch()" onclick="openCustomerWindowInList()" type="text" style="width:300px;" /><label style="margin-left:20px;" for="sale_date_begin">送货日期：</label>' +
                 '<input id="sale_date_begin" onchange="findOrders()" style="width:120px;" />' +
                 '<label for="sale_date_end">至</label>' +
                 '<input id="sale_date_end" onchange="findOrders()" style="width:120px;"  />'
@@ -183,18 +181,6 @@ function loadOrdersTable() {
     if (table_click_attached) {
         return;
     }
-
-    /*
-     $('#orders_table tbody').on('click', 'tr', function () {
-     if ($(this).hasClass('selected')) {
-     $(this).removeClass('selected');
-     }
-     else {
-     ordersTable.$('tr.selected').removeClass('selected');
-     $(this).addClass('selected');
-     }
-     });
-     */
 
     table_click_attached = false;
 }
@@ -223,41 +209,15 @@ function openPreviewSelect(orderNumber) {
 
 
 function logout() {
-    // if (window.confirm("确定退出？")) {
     // doLogout()
-    var ret = ipc.sendSync('session', {opt: 'clear', key: ''});
+    var ret = ipcRenderer.sendSync('session', {opt: 'clear', key: ''});
     if (ret == 'true') {
         console.log("Clear session!")
-        user = ipc.sendSync('session', {opt: 'get', key: 'user'});
+        user = ipcRenderer.sendSync('session', {opt: 'get', key: 'user'});
         console.log('User -> ' + user); // prints "pong"
     }
     document.location.href = "login.html"
-    // }
 }
-/*function findByOrderNumber(order_number) {
- DB_QUERY({
- sql: findSaleOrder, params: [order_number], doResult: function (result) {
- //console.log(result.rows)
- var json_data = result.rows[0].data;
- //console.log(json_data)
- var r = ipc.sendSync('session', {
- opt: 'put',
- key: 'order',
- value: {order_info: json_data, type: "select"}
- });
- $('#__m').modal('show')
- //var r = ipc.sendSync('hide_main_window', {});
- p_win = window.open('sale-order-preview.html', '打印', "width=800,height=600,alwaysOnTop=true");
- window.onfocus = function () {
- if (!p_win.closed) {
- p_win.focus();
- }
- }
- }
- });
- }*/
-/*var customerData = new Array();
- var customerInfo = new Array();*/
 
 
 function openPreviewWindow() {
@@ -300,7 +260,7 @@ function openPreviewWindow() {
         arrowKey: false
     });
 
-    win.loadURL('file://' + __dirname + '/order-preview.html');
+    win.loadURL('file://' + __dirname + '/order/order-preview.html');
     win.show();
 
 }
@@ -311,15 +271,6 @@ function openPreviewCreate() {
     var c_customer_id = $('#customer_id').val();
     var c_customer_name = $('#customer_name').val();
 
-    /* for (var i = 0; i < customerData.length; i++) {
-     var _children = customerData[i].children;
-     for (var j = 0; j < _children.length; j++) {
-     if (_children[j].id == c_customer_id) {
-     c_customer_name = _children[j].text;
-     break;
-     }
-     }
-     }*/
     var c_customer_address = $('#customer_address').val();
     var c_customer_principal = $('#customer_principal').val();
     var c_customer_phone = $('#customer_phone').val();
@@ -328,7 +279,6 @@ function openPreviewCreate() {
     if (c_product_total_sum != '') {
         c_product_total_sum = accounting.unformat(c_product_total_sum)
     }
-
 
     var c_products = new Array();
     var _modals = $('.product_modal');
@@ -410,12 +360,8 @@ function openPreviewCreate() {
  * 加载并初始化日期控件
  */
 function initSaleDate() {
-
     $("#sale_date").datepicker(datepicker_options);
     $("#sale_date").datepicker("setDate", new Date());
-    /*
-     $("#sale_date_begin").datepicker(datepicker_options);
-     $("#sale_date_end").datepicker(datepicker_options);*/
 
 }
 
@@ -460,62 +406,6 @@ function clearProductItems() {
 function clearTotalSum() {
     $('#product_total_sum').html('');
 }
-
-/*function change_modal(src) {
- var _modal_id = $(src).val();
- var _idx = $(src).parent().parent().attr('idx');  // tr attr 'idx'
- if (_modal_id == 0 || _modal_id == '') {
- // 选择空项目
-
- $('tr[idx="' + _idx + '"] .product_category').val('');
- $('tr[idx="' + _idx + '"] .product_category').attr("category_id", '');
-
- $('tr[idx="' + _idx + '"] .product_units').val('');
- $('tr[idx="' + _idx + '"] .product_units').attr("units_id", '');
- $('tr[idx="' + _idx + '"] .product_unit_price').val('');
-
- $('tr[idx="' + _idx + '"] .product_num').val('');
- $('tr[idx="' + _idx + '"] .product_sum').val('');
- $('tr[idx="' + _idx + '"] .product_memo').val('');
- // 重新计算金额
- changeNumOrUnitPrice(src);
- return;
-
- //  $('.product_category[idx="'+_idx+'"]').val('');
- //  $('.product_category[idx="'+_idx+'"]').attr("category_id", '');
-
- //  $('.product_units[idx="'+_idx+'"]').val('');
- //  $('.product_units[idx="'+_idx+'"]').attr("units_id", '');
- //  $('.product_unit_price[idx="'+_idx+'"]').val('');
-
- //  $('.product_num[idx="'+_idx+'"]').val('');
- //  $('.product_sum[idx="'+_idx+'"]').val('');
- //  $('.product_memo[idx="'+_idx+'"]').val('');
- }
-
- var found = false;
- for (var i = 0; i < modals.length; i++) {
- var modalOptions = modals[i].options;
- for (var j = 0; j < modalOptions.length; j++) {
- if (modalOptions[j].modal_id == _modal_id) {
- $('tr[idx="' + _idx + '"] .product_category').val(modalOptions[j].category_name);
- $('tr[idx="' + _idx + '"] .product_category').attr("category_id", modalOptions[j].category_id);
-
- $('tr[idx="' + _idx + '"] .product_units').val(modalOptions[j].units_name);
- $('tr[idx="' + _idx + '"] .product_units').attr("units_id", modalOptions[j].units_id);
- $('tr[idx="' + _idx + '"] .product_unit_price').val(modalOptions[j].suggest_unit_price);
-
- found = true;
- break;
- }
- }
-
- if (found)
- break;
- }
- // 重新计算金额
- changeNumOrUnitPrice(src);
- }*/
 
 /*商品数量或者单价修改触发*/
 function changeNumOrUnitPrice(src) {
@@ -627,11 +517,15 @@ function initNewOrderPage() {
 
 }
 
+function changeCustomerSearch() {
+    findOrders()
+}
+
 function openCustomerWindowInList() {
     openCustomerWindow(function (customer) {
         console.log("Get customer => " + JSON.stringify(customer));
         // 获取到客户数据
-        $('#search_customer').attr('customer_id', customer.id);
+       // $('#search_customer').attr('customer_id', customer.id);
         $('#search_customer').val(customer.name);
 
         findOrders()
@@ -711,34 +605,33 @@ function resetOrderForm() {
  */
 function findOrders() {
     var condition = null;
+    var parameters = [company.id];
 
-    var customer_id = $('#search_customer').attr('customer_id');
+    var customer_id = $('#search_customer').val();
     var sale_date_begin = $('#sale_date_begin').val();
     var sale_date_end = $('#sale_date_end').val();
 
     var condition_sql_arr = []
     var condition_param_arr = []
     if (customer_id != '') {
-        condition_sql_arr.push(' customer = $? ');
+        condition_sql_arr.push(' customers.name = $? ');
         condition_param_arr.push(customer_id);
     }
     if (sale_date_begin != '') {
-        condition_sql_arr.push(" sale_date >= $? ");
+        condition_sql_arr.push(" orders.sale_date >= $? ");
         condition_param_arr.push(sale_date_begin);
     }
     if (sale_date_end != '') {
-        condition_sql_arr.push(" sale_date <= $? ");
+        condition_sql_arr.push(" orders.sale_date <= $? ");
         condition_param_arr.push(sale_date_end);
     }
 
     if (condition_sql_arr.length > 0) {
         condition = {}
-        condition.sql = " where ";
+        condition.sql = "";
         for (var x=0; x<condition_sql_arr.length; x++) {
-            if (x > 0) {
-                condition.sql += " and "
-            }
-            var _sql = condition_sql_arr[x].replace('?', (x+1));
+            condition.sql += " and "
+            var _sql = condition_sql_arr[x].replace('?', (x+2));
             condition.sql += _sql;
         }
         condition.params = condition_param_arr;
@@ -746,13 +639,17 @@ function findOrders() {
 
 
     var sqlFindOrders = SQL_FIND_ALL_ORDERS;
-    var parameters = [];
     if (condition != null) {
+        console.log(condition.sql)
         sqlFindOrders = sqlFindOrders.replace('__condition__', condition.sql)   // text: where $1 , params:[]
-        parameters = condition.params;
+        for (var x in condition.params) {
+            parameters.push(condition.params[x])
+        }
+    } else {
+        sqlFindOrders = sqlFindOrders.replace('__condition__', "")
     }
 
-    console.info("SQL_FIND_ORDERS: "+sqlFindOrders +"/nPARAMS: " + JSON.stringify(parameters))
+    console.info("SQL_FIND_ORDERS: "+sqlFindOrders +"\nPARAMS: " + JSON.stringify(parameters))
     DB_QUERY({
         sql: sqlFindOrders, params: parameters, doResult: function (result) {
             //showRows(result1.rows);
@@ -781,64 +678,10 @@ function findOrders() {
                 tableData.push(orderInfo);
             }
             ordersTable.clear();  //.draw()
-            console.log(tableData)
             ordersTable.rows.add(tableData).draw();
         }
     });
 }
-/*
- function listOrders(limit, offset) {
- DB_QUERY({
- sql: countAllSaleOrder, params: [], doResult: function (result) {
- var count = result.rows[0].cnt;
- console.log("order size -> " + count);
- DB_QUERY({
- sql: findAllSaleOrder, params: [limit, offset], doResult: function (result1) {
- showRows(result1.rows);
- }
- });
- }
- });
- }*/
-/*
-
- function showRows(rows) {
- //遍历结果显示表格
- //清空现有的行
- $('#list_table tbody').empty();
-
- //todo
- for (var i = 0; i < rows.length; i++) {
- var s = '<tr>';
- s += '<td><a href="#" onclick="findByOrderNumber('+rows[i].order_number+')">' + rows[i].order_number + '</a></td>';
- s += '<td>' + rows[i].data.sale_date + '</td>'
- s += '<td>' + rows[i].data.customer_name + '</td>'
- s += '<td>' + showModalText(rows[i].data.modals) + '</td>'
- s += ' <td>' + rows[i].data.create_user + '</td>'
- s += '<td>' + rows[i].create_date.Format("yyyy-MM-dd hh:mm") + '</td>'
- s += '</tr>';
- $(s).appendTo('#list_table tbody');
- //console.log(s)
- // $('#list_table').append(s)
- }
- }
-
- function showModalText(modals) {
- var r = "";
- if (modals.length>0) {
- var modal0 = modals[0];
- r = modal0.product_modal_name +","+modal0.product_category_name+","+
- modal0.product_num + modal0.product_units
-
- if (modals.length>1) {
- r +="   ..."
- }
- }
-
- return r;
- }
-
- */
 
 
 /********************************************************订单内容部分处理**********************************************/
@@ -933,9 +776,7 @@ function gotoRegionManage() {
         mainWin.setMovable(true);
         $.colorbox.close()
     });
-    //win.on('blur', function(){
-    //    win.focus();
-    //})
+
     win.loadURL('file://' + __dirname + '/sys_manage/region-manage.html');
     win.show();
 
@@ -948,7 +789,6 @@ function gotoRegionManage() {
 
 
 function gotoCustomerManage() {
-
     const BrowserWindow = require('electron').remote.BrowserWindow;
     var mainWin = BrowserWindow.getFocusedWindow()
     // In the main process.

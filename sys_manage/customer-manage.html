@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <script src="../scripts/pgquery.js"></script>
-
     <script src="../scripts/bootstrap/js/bootstrap.js"></script>
     <script src="../scripts/jquery.ztree.all.js"></script>
     <script src="../scripts/jquery.colorbox-min.js"></script>
@@ -96,6 +95,9 @@
 <div id="win_overlay" style="display:none;"></div>
 
 <script>
+    const ipcRenderer = require('electron').ipcRenderer;
+    var company = ipcRenderer.sendSync('session', {opt:'get', key: 'company'});
+
     function beforeEditName() {
         return false;
     }
@@ -121,7 +123,7 @@
         }
 
         DB_QUERY({
-            sql: SQL_FIND_REGIONS, params: [], doResult: function (result) {
+            sql: SQL_FIND_REGIONS, params: [company.id], doResult: function (result) {
                 var zNodes = new Array();
                 var rows = result.rows;
                 for (var i = 0; i < rows.length; i++) {
@@ -173,7 +175,7 @@
     var table_click_attached = false;
 
     function fillAllCustomers() {
-        changeDataTable(["000000", "999999"]);
+        changeDataTable(["000000", "999999", company.id]);
     }
 
     /*根据选择的地区更新用户列表表格的内容*/
@@ -182,9 +184,9 @@
             // 按pcode大小排序
             pcode = pcode.sort();
             console.log("Sorted pcodes: " + pcode);
-            changeData([pcode[0], pcode[pcode.length - 1]]);
+            changeData([pcode[0], pcode[pcode.length - 1], company.id]);
         } else {
-            changeData([pcode, pcode]);
+            changeData([pcode, pcode, company.id]);
         }
     }
 

@@ -1,17 +1,9 @@
 <!DOCTYPE html>
-<html lang="cn">
-
-
+<html lang="zh_CN">
 <head>
     <meta charset="UTF-8">
     <title>地区管理</title>
-    <script>
-        jQuery = require('jquery')
-        $ = jQuery;
-    </script>
-
     <script src="../scripts/pgquery.js"></script>
-
     <script src="../scripts/bootstrap/js/bootstrap.js"></script>
     <script src="../scripts/jquery.ztree.all.js"></script>
     <script src="../scripts/jquery.colorbox-min.js"></script>
@@ -65,6 +57,8 @@
 </div>
 
 <script>
+    const ipcRenderer = require('electron').ipcRenderer;
+    var company = ipcRenderer.sendSync('session', {opt:'get', key: 'company'});
 
     function beforeEditName() {
         return false;
@@ -87,7 +81,7 @@
         }
 
         DB_QUERY({
-            sql: SQL_FIND_REGIONS, params: [], doResult: function (result) {
+            sql: SQL_FIND_REGIONS, params: [company.id], doResult: function (result) {
                 var zNodes = new Array();
                 var rows = result.rows;
                 for (var i = 0; i < rows.length; i++) {
@@ -234,7 +228,7 @@
             if (PARENT_NODE == null||PARENT_NODE.name == ancestorNodeText) {
                 var p1 = {name: _name, pcode: _pcode, cities: []}
                 DB_QUERY({
-                    sql: SQL_ADD_REGION, params: [p1], doResult: function (result) {
+                    sql: SQL_ADD_REGION, params: [p1, company.id], doResult: function (result) {
                         regionTreeObj.destroy();
                         console.log("Re init tree menu.")
                         initTreeMenu();
@@ -253,7 +247,7 @@
                 var p1 = {name: PARENT_NODE.name, pcode: PARENT_NODE.pcode, cities: cities};
                 console.log("New parent node is :" + JSON.stringify(p1))
                 DB_QUERY({
-                    sql: SQL_UPDATE_REGION, params: [p1, p1.name], doResult: function (result) {
+                    sql: SQL_UPDATE_REGION, params: [p1, p1.name, company.id], doResult: function (result) {
                         regionTreeObj.destroy();
                         console.log("Re init tree menu.")
                         initTreeMenu();
@@ -281,7 +275,7 @@
 
                 var region_node = {name: _name, pcode: _pcode, cities: cities};
                 DB_QUERY({
-                    sql: SQL_UPDATE_REGION, params: [region_node, _old_name], doResult: function (result) {
+                    sql: SQL_UPDATE_REGION, params: [region_node, _old_name, company.id], doResult: function (result) {
                         regionTreeObj.destroy();
                         console.log("Re init tree menu.")
                         initTreeMenu();
@@ -305,7 +299,7 @@
                     }
                     var region = {name: _parent_node.name, pcode: _parent_node.pcode, cities: cities};
                     DB_QUERY({
-                        sql: SQL_UPDATE_REGION, params: [region, region.name], doResult: function (result) {
+                        sql: SQL_UPDATE_REGION, params: [region, region.name, company.id], doResult: function (result) {
                             regionTreeObj.destroy();
                             console.log("Re init tree menu.")
                             initTreeMenu();
@@ -324,7 +318,7 @@
             if (DELETE_NODE.isParent) {
                 // 删除省
                 DB_QUERY({
-                    sql: SQL_DELETE_REGION, params: [DELETE_NODE.name], doResult: function (result) {
+                    sql: SQL_DELETE_REGION, params: [DELETE_NODE.name, company.id], doResult: function (result) {
                         regionTreeObj.destroy();
                         console.log("Re init tree menu.")
                         initTreeMenu();
@@ -348,7 +342,7 @@
                 console.log("After delete, new parent node json :" + JSON.stringify(p1))
 
                 DB_QUERY({
-                    sql: SQL_UPDATE_REGION, params: [p1, _parent_name], doResult: function (result) {
+                    sql: SQL_UPDATE_REGION, params: [p1, _parent_name, company.id], doResult: function (result) {
                         regionTreeObj.destroy();
                         console.log("Re init tree menu.")
                         initTreeMenu();

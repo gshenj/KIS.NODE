@@ -1,26 +1,17 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
 <html lang="zh-cn">
 
 <head>
     <meta charset="utf-8">
     <title>打印出货单</title>
 
-    <script type="text/javascript">
-        jQuery = require('jquery')
-        $ = jQuery;
+    <script src="../scripts/pgquery.js"></script>
+    <script type="text/javascript" src="../scripts/accounting.min.js"></script>
+    <script>
         var ipcRenderer = require('electron').ipcRenderer;
         var order = ipcRenderer.sendSync('session', {opt: 'get', key: 'order'});
         var type = order.type;
         var order_info = order.order_info;
-
-
-        console.log(JSON.stringify(order))
-    </script>
-    <script src="scripts/pgquery.js"></script>
-
-    <script type="text/javascript" src="scripts/accounting.min.js"></script>
-    <script>
 
         accounting.settings = {
             currency: {
@@ -173,11 +164,11 @@
         }
 
     </script>
-    <link href="scripts/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="../scripts/bootstrap/css/bootstrap.css" rel="stylesheet">
     <link href="data:text/css;charset=utf-8," data-href="scripts/bootstrap/css/bootstrap-theme.css" rel="stylesheet"
           id="bs-theme-stylesheet">
 
-    <script src="scripts/bootstrap/js/bootstrap.js"></script>
+    <script src="../scripts/bootstrap/js/bootstrap.js"></script>
 
     <style type="text/css">
 

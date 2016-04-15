@@ -64,16 +64,19 @@ var countAllSaleOrder = "select count(*) as cnt from sale_order_json";
 
 var findSaleOrder = "select customer.name, customer.id, sale_order.order_number, sale_order.data from customer, sale_order_json sale_order where sale_order.customer_id = customer.id and order_number = $1";
 */
+var SQL_FIND_COMPANIES = "select * from companies order by id"
+
 var SQL_LAST_ORDER_NUMBER = "select COALESCE(max(order_number), 100000 ) as order_number from orders";
-var SQL_FIND_ALL_ORDERS = "select order_number, customer,customer_info, create_user, create_user_info, sale_date, create_time, products, total_sum, total_num, canceled from orders __condition__ order by order_number desc";
+var SQL_FIND_ALL_ORDERS = "select order_number, customer, orders.customer_info, " +
+    "create_user, create_user_info, sale_date, create_time, products, total_sum, total_num, canceled " +
+    "from orders, customers where orders.customer = customers.id and customers.company = $1 __condition__ order by order_number desc";
 
 var SQL_FIND_USER_BY_NAME = 'SELECT * from kis_user where name=$1';
 var SQL_FIND_ORDER_BY_ORDER_NUMBER = "select order_number, customer,customer_info, create_user, create_user_info, sale_date, create_time, products, total_sum, total_num, canceled from orders where order_number = $1";
 var SQL_ADD_ORDER = "insert into orders(order_number, sale_date, customer, customer_info, create_user, create_user_info, products, total_num, total_sum) values(nextval('seq_order_number'), $1,$2,$3,$4,$5,$6,$7,$8)";
 var SQL_CANCEL_ORDER = "update orders set canceled = 1 where order_number = $1";
-var SQL_FIND_REGIONS = "select region from regions order by region->>'pcode';"
 
-var SQL_FIND_CUSTOMERS_BY_REGION = "select id, region,customer_info from customers where region >= $1 and region <= $2 order by region";
+var SQL_FIND_CUSTOMERS_BY_REGION = "select id, region,customer_info from customers where region >= $1 and region <= $2 and company = $3 order by region";
 var SQL_ADD_CUSTOMER = "insert into customers(id, name, region, customer_info) values(nextval('seq_kis'), $1, $2, $3)";
 var SQL_UPDATE_CUSTOMER = "update customers set name = $1, customer_info = $2 where id = $3";
 var SQL_DELETE_CUSTOMER = "delete from customers where id = $1";
@@ -85,9 +88,10 @@ var SQL_DELETE_PRODUCT = "delete from products where customer=$1 and name=$2"
 var SQL_UPDATE_PRODUCT = "update products set name = $1 where customer=$2 and name=$3"
 var SQL_UPDATE_MODALS = "update products set modals = $1 where customer=$2 and name=$3"
 
-var SQL_ADD_REGION = "insert into regions(region) values($1)";
-var SQL_UPDATE_REGION = "update regions set region = $1 where (region ->>'name') = $2"
-var SQL_DELETE_REGION = "delete from regions where region->>'name'= $1"
+var SQL_FIND_REGIONS = "select region from regions where company = $1 order by region->>'pcode';"
+var SQL_ADD_REGION = "insert into regions(region, company) values($1, $2)";
+var SQL_UPDATE_REGION = "update regions set region = $1 where (region ->>'name') = $2 and company = $3"
+var SQL_DELETE_REGION = "delete from regions where region->>'name'= $1 and company = $2"
 
 
 /**
